@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import os
+sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 
 print('Merging upstream and midstream results...')
-upstream = pd.read_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/Analytics/all_upstream_results.xlsx')
+upstream = pd.read_excel(sp_dir + '/Upstream/Analytics/all_upstream_results.xlsx')
 
-midstream = pd.read_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx')
+midstream = pd.read_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx')
 
 # Calculate Crude to Refinery in bbl/d from Energy Summary tab of OPGEE model. Formula is based on cell G6 in OPEM input tab  
 #https://rockmtnins.sharepoint.com/:x:/r/sites/CAE/_layouts/15/Doc.aspx?sourcedoc=%7B5E0994C9-8E35-440B-8BB4-31DF5167F60C%7D&file=OCI%20site%20input%20table%20sources.xlsx&action=default&mobileredirect=true&cid=544ad233-565f-438c-9ce2-d7d5b607b1da
@@ -120,8 +121,8 @@ slate_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/
 
 opem_product_slate.index = slate_index.iloc[:,0]
 
-opem_product_slate.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Downstream/Analytics/all_product_slates.xlsx')
-opem_product_slate.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
+opem_product_slate.to_excel(sp_dir + '/Downstream/Analytics/all_product_slates.xlsx')
+opem_product_slate.to_csv(sp_dir + '/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
 
@@ -142,7 +143,7 @@ opem_input['GWP selection (yr period, 100 or 20)']=20
 
 opem_input_T = opem_input.set_index('OPEM_field_name').T
 
-opem_input_T.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Downstream/Analytics/opem_input.xlsx')
+opem_input_T.to_excel(sp_dir+'/Downstream/Analytics/opem_input.xlsx')
 
 opem_input_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_input.csv',header=0)
 opem_input_T.reset_index(inplace = True)
@@ -164,9 +165,9 @@ opem_output_T = opem_output.set_index('Selected Oil').T
 opem_output_T.reset_index(inplace = True)
 
 # Save and reload to get unique column headers
-opem_output_T.to_excel('/Users/rwang/Documents/OCI+/Downstream/opem/opem_output.xlsx',index=False)
-opem_output_T = pd.read_excel('/Users/rwang/Documents/OCI+/Downstream/opem/opem_output.xlsx')
+opem_output_T.to_excel('opem_output.xlsx',index=False)
+opem_output_T = pd.read_excel('opem_output.xlsx')
 
 up_mid_down = upstream_midstream_for_opem.merge(opem_output_T,left_on='OPEM_field_name',right_on ='index',how='left')
-up_mid_down.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Downstream/Analytics/up_mid_down_new.xlsx')
+up_mid_down.to_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new.xlsx')
 print('OPEM run completed and up_mid_down file updated.')
