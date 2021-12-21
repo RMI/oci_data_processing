@@ -5,60 +5,67 @@ from os.path import join
 sp_dir= '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 
 print('Extracting product slates and emission data from Liam batch run results...')
-twentyyr_directory_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Haverly 20y',
-                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/OCI 20y',
-                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/PRELIM 20y']
+onehundredyr_directory_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 535 Assays Results',
+                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI 107 Assays Results',
+                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM Assays Results']
 
-twentyyr_assay_file_list = dict()
-for directory in twentyyr_directory_path:
-    folder = directory.split('/')[-1].split(' ')[0].lower()
-    twentyyr_assay_file_list[folder] = []
+onehundredyr_assay_file_list = dict()
+for directory in onehundredyr_directory_path:
+    folder = directory.split('/')[-1].split(' ')[0].split(' ')[0].lower()
+    onehundredyr_assay_file_list[folder] = []
     
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
         if filename.endswith('.xlsx'): 
 #            print(filename)
-            twentyyr_assay_file_list[folder].append(join(directory, filename))
+            onehundredyr_assay_file_list[folder].append(join(directory, filename))
+
 
 def extract_product_slate(file):
     """A function that extracts product slate mass flows from the a batch run file.
     The input of is the file direcotyr and the output is a column of product slate"""
     df = pd.read_excel(file,sheet_name=0, header = None)
+    assay_id = file.split('/')[-1].split('_')[0]
     assay_name = df.iloc[0,0]
     #print(assay_name)
     df = df.iloc[:,1]
     #get emission fraction data from the 3d tab (use Coking Refinery)  
     emission = pd.read_excel(file,sheet_name=2, header = None)
-    
-    #print(df)
+
     df = pd.concat([df,emission.iloc[1,0:3].T],axis=0)
-    default_refinery = '_'.join(df.iloc[0].split('_')[:-2])
+    default_refinery = df.iloc[0] #'_'.join(df.iloc[0].split('_')[:-2])
     df = df.reset_index()
     #print(df)
     df = df.drop(columns ='index')
     
     df.iloc[0,0] = assay_name
+
     df.iloc[1,0] = default_refinery
+    df.iloc[2,0]=assay_id
     #assay_name
     return df
 
 
 # The parameter names are extracted into a series 
-parameter = pd.read_excel(twentyyr_assay_file_list['oci'][0],sheet_name=0, header=None)
+parameter = pd.read_excel(onehundredyr_assay_file_list['oci'][0],sheet_name=0, header=None)
 parameter = parameter.iloc[:,0]
 
 parameter = pd.concat([parameter,pd.DataFrame(['emission_frac_CO2','emission_frac_CH4','emission_frac_N2O'])],axis =0)
 parameter = parameter.reset_index().drop(columns ='index')
 
+
+
 parameter.iloc[0,0]='parameter'
 parameter.iloc[1,0]='Default Refinery'
+parameter.iloc[2,0]='assay_id'
 
-# store all twenty year assay product slates in a dictionary with assay group as keys and assay product slate dataframes as values
-twentyyr_assay_slates_df = dict()
-for assay_group in twentyyr_assay_file_list:
+
+# store all one hundred year assay product slates in a dictionary with assay group as keys and assay product slate dataframes as values
+onehundredyr_assay_slates_df = dict()
+for assay_group in onehundredyr_assay_file_list:
     #print(assay_group)
     df_list = []
-    for assay_file in twentyyr_assay_file_list[assay_group]:
+    for assay_file in onehundredyr_assay_file_list[assay_group]:
         df_list.append(extract_product_slate(assay_file))
         
         df =pd.concat([parameter,pd.concat(df_list,axis = 1)],axis=1)
@@ -69,9 +76,9 @@ for assay_group in twentyyr_assay_file_list:
         df = df[1:]
         df = df.astype('float',errors='ignore')
         #df['assay_group']=assay_group
-        twentyyr_assay_slates_df[assay_group]= df    
+        onehundredyr_assay_slates_df[assay_group]= df    
 
-final_assay_library = pd.concat(twentyyr_assay_slates_df,axis = 0)
+final_assay_library = pd.concat(onehundredyr_assay_slates_df,axis = 0)
 
 final_assay_library.reset_index(inplace = True)
 
@@ -90,29 +97,25 @@ final_assay_library.drop_duplicates(subset='assay_name',keep='first')
 
 final_assay_library['assay_name'] = final_assay_library['assay_name'].apply(lambda x: x.strip())
 
-final_assay_library.head()
 
-# #### Skip skip skip, fuzzy match to match opgee assays to assay library
-# #### The data has been stored in OCI_Database.db
-# from fuzzywuzzy import fuzz
-# def best_match(x,slates):
-# #This function find the best matching field_country combination in soloman list
-#     match_score = []
-#     for i in range(len(slates)):
-#         score = fuzz.token_set_ratio(x, slates[i])
-#         match_score.append(score)
-#     return slates[match_score.index(max(match_score))]
 
-# df_assay_slate_match = pd.DataFrame()
-# df_assay_slate_match['opgee_assay_list']=list(field_assay['Assay'].unique())
 
-# df_assay_slate_match
 
-# df_assay_slate_match['product_slate_match']=df_assay_slate_match['opgee_assay_list'].apply(lambda x: best_match(x,slates))
+# Use the twenty year file names to get correct assay names. Reason: 100 year file name is not clean. 
+twentyyr_directory_path = {'haverly': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Haverly 20y',
+                          'oci': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/OCI 20y',
+                          'prelim': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/PRELIM 20y'}                              
 
-# pd.set_option("display.max_rows", 500)
+def assay_name_20yr(assay_group,assay_id):
+    '''return assay_name_20yr in the 20 year direcotry based on file names. 
+    The assay_name_20yr will be used as one of the keys to match with sulphate and gravity data table'''
+    
+    for filename in os.listdir(twentyyr_directory_path[assay_group]):
+        if filename.split('_')[0]==assay_id:
+            assay_name = '_'.join(filename.split('_')[1:])[:-5]
+            return assay_name.strip()
 
-# df_assay_slate_match.to_csv('opgee_assay_slate_match.csv')
+final_assay_library['assay_name']=final_assay_library.apply(lambda x: assay_name_20yr(x['assay_group'],x['assay_id']),axis=1)
 
 # Get throughput and sulfur content values from the three assay files and merge into the assay library
 
@@ -161,6 +164,8 @@ else:
 
 final_assay_library_merged.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/final_assay_library.xlsx',index = False)
 
+
+
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 
@@ -175,11 +180,16 @@ field_assay = pd.read_sql('select * from field_assay_mapping',connection)
 
 #field_assay.to_sql('field_assay_mapping',connection,if_exists = 'replace',index = False)
 
-merged_df = field_assay.merge(final_assay_library_merged,left_on=['correct_assay_name','assay_category'],right_on=['assay_name','assay_group'],how = 'left')
+
+
+field_assay['assay_id'] = field_assay['assay_id'].apply(lambda x: str(int(x)))
+
+
+
+merged_df = field_assay.merge(final_assay_library_merged,left_on=['assay_id','assay_category'],right_on=['assay_id','assay_group'],how = 'left')
+
 
 merged_df.to_excel(sp_dir +'/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.xlsx',index = False)
-
-
 
 # Reload the file from Excel to automatically naming 
 # the columns with numbers to avoid duplicated column names
@@ -306,6 +316,7 @@ import numpy as np
 field_slate_emission['matched_assay']=np.where(field_slate_emission['normalized_ratio']==1.0,field_slate_emission['correct_assay_name'],'Composite Proxy Assays')
 
 field_slate_emission.drop(columns ='correct_assay_name',inplace = True)
+field_slate_emission['GWP']='100yr'
 
 field_slate_emission.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx',index = False)
 

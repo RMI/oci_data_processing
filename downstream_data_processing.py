@@ -122,7 +122,7 @@ slate_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/
 opem_product_slate.index = slate_index.iloc[:,0]
 
 opem_product_slate.to_excel(sp_dir + '/Downstream/Analytics/all_product_slates.xlsx')
-opem_product_slate.to_csv(sp_dir + '/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
+opem_product_slate.to_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
 
