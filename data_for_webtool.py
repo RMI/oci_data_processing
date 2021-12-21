@@ -1,12 +1,13 @@
 import pandas as pd
+import numpy as np
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 
-up_mid_down = pd.read_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new.xlsx')
+up_mid_down = pd.read_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new_100yr.xlsx')
 
 
 OCI_infobase=pd.DataFrame()
 
-OCI_infobase['Field Name']=up_mid_down['Field name']
+OCI_infobase['Field Name']=up_mid_down['Field_name']
 
 OCI_infobase['Country']=up_mid_down['Field location (Country)']
 
@@ -61,7 +62,7 @@ OCI_infobase['Upstream Methane Intensity (kgCH4/boe)']=(up_mid_down['venting_ch4
 # Midstream Methane Intensity calculation, use 20yr total emission from midstream runs and get fraction of CO2eq and convert back to methane 
 OCI_infobase['Midstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total refinery processes']\
     *OCI_infobase['2020 Crude Production Volume (bbl)']/OCI_infobase['2020 Crude Production Volume (bbl)']\
-    *up_mid_down['emission_frac_CH4']/85
+    *up_mid_down['emission_frac_CH4']/30
 
 # Downstream mehtane accounts for all OPEM methane output + upstream natural gas distribution /LNG
 OCI_infobase['Downstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total Transport CH4 Emissions Intensity (kg CH4. / BOE)']+\
@@ -104,7 +105,7 @@ coordinates.drop_duplicates(subset = ['Country', 'Field Name'], inplace = True)
 OCI_infobase = pd.merge(OCI_infobase,coordinates,left_on=['Country', 'Field Name'],right_on=['Country', 'Field Name'],how = 'left')
 
 OCI_info100=pd.DataFrame()
-OCI_info100['Field Name']=up_mid_down['Field name']
+OCI_info100['Field Name']=up_mid_down['Field_name']
 OCI_info100['Country'] = up_mid_down['Field location (Country)']
 
 def upstream_gmj_kgboe_convert(x):
@@ -195,7 +196,7 @@ OCI_info100['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info100['Total Em
     - OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']
 
 OCI_info20 = pd.DataFrame()
-OCI_info20['Field Name']=up_mid_down['Field name']
+OCI_info20['Field Name']=up_mid_down['Field_name']
 OCI_info20['Country'] = up_mid_down['Field location (Country)']
 
 OCI_info20['Upstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)'] + OCI_infobase['Upstream Methane Intensity (kgCH4/boe)']*55)
@@ -203,3 +204,6 @@ OCI_info20['Upstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Upstream C
 OCI_info20['Midstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)'] + OCI_infobase['Midstream Methane Intensity (kgCH4/boe)']*55)
 
 OCI_info20['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] + OCI_infobase['Downstream Methane Intensity (kgCH4/boe)']*55)
+
+# Start Aggregation 
+
