@@ -56,7 +56,7 @@ upstream_midstream = upstream.merge(midstream,right_on=
 # Filter out obsolete and misinput upstream fields such as Bakken , Generic 
 upstream_midstream = upstream_midstream[upstream_midstream['sulfur'].notna()]
 
-upstream_midstream_for_opem = upstream_midstream[upstream_midstream['year']==2020]
+upstream_midstream_for_opem = upstream_midstream #[upstream_midstream['year']==2020]
 
 upstream_midstream_for_opem['OPEM_field_name']=upstream_midstream_for_opem['opgee_field']+';'+upstream_midstream_for_opem['original_file']
 
