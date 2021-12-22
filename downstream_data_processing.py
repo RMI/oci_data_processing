@@ -5,9 +5,12 @@ sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 
 print('Merging upstream and midstream results...')
-upstream = pd.read_excel(sp_dir + '/Upstream/Analytics/all_upstream_results.xlsx')
 
-midstream = pd.read_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx')
+import sqlite3
+connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
+
+upstream = pd.read_sql('select * from upstream_results',connection)
+midstream = pd.read_sql('select * from midstream_results',connection)
 
 # Calculate Crude to Refinery in bbl/d from Energy Summary tab of OPGEE model. Formula is based on cell G6 in OPEM input tab  
 #https://rockmtnins.sharepoint.com/:x:/r/sites/CAE/_layouts/15/Doc.aspx?sourcedoc=%7B5E0994C9-8E35-440B-8BB4-31DF5167F60C%7D&file=OCI%20site%20input%20table%20sources.xlsx&action=default&mobileredirect=true&cid=544ad233-565f-438c-9ce2-d7d5b607b1da
@@ -140,7 +143,7 @@ opem_input['NGL C5+ Volume (BOED)']=upstream_midstream_for_opem['NGL_C5(boed)']
 opem_input['Total field NGL volume (BOED)']=''
 opem_input['OPGEE Coke mass (kg/d)']=upstream_midstream_for_opem['petcoke(kg/d)']
 opem_input['% Field NGL C2 Volume allocated to Ethylene converstion']=1
-opem_input['GWP selection (yr period, 100 or 20)']=20
+opem_input['GWP selection (yr period, 100 or 20)']=100
 
 opem_input_T = opem_input.set_index('OPEM_field_name').T
 
@@ -159,7 +162,7 @@ os.system('opem')
 
 opem_output = pd.read_csv(opem_dir + '/opem_output.csv',header=1)
 
-upstream_midstream_for_opem['estimate_boe/d'] = upstream_midstream_for_opem['Oil production volume']*(1+upstream_midstream_for_opem['Gas-to-oil ratio (GOR)']/5800)
+#upstream_midstream_for_opem['estimate_boe/d'] = upstream_midstream_for_opem['Oil production volume']*(1+upstream_midstream_for_opem['Gas-to-oil ratio (GOR)']/5800)
 
 opem_output_T = opem_output.set_index('Selected Oil').T
 
@@ -168,7 +171,8 @@ opem_output_T.reset_index(inplace = True)
 # Save and reload to get unique column headers
 opem_output_T.to_excel('opem_output.xlsx',index=False)
 opem_output_T = pd.read_excel('opem_output.xlsx')
-
 up_mid_down = upstream_midstream_for_opem.merge(opem_output_T,left_on='OPEM_field_name',right_on ='index',how='left')
 up_mid_down.to_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new.xlsx')
+up_mid_down.to_sql('up_mid_downstream_results',connection, if_exists='replace', index=False)
 print('OPEM run completed and up_mid_down file updated.')
+
