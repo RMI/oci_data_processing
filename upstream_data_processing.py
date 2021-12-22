@@ -13,7 +13,7 @@ directory = os.fsencode(sp_dir + '/Upstream/csvs')
 list_csv =[]
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
-    if filename.endswith('.csv') and filename.startswith('2020'): 
+    if filename.endswith('.csv') and filename.startswith('2'): 
         #print(filename)
         list_csv.append(filename)
         continue
