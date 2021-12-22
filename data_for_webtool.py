@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-
-up_mid_down = pd.read_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new_100yr.xlsx')
-
+import sqlite3
+connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
+up_mid_down = pd.read_sql('select * from up_mid_downstream_results',connection)
+# select only 2020 results for webtool
+up_mid_down = up_mid_down[up_mid_down['year']=='2020']
 
 OCI_infobase=pd.DataFrame()
 
