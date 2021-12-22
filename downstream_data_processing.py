@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
+opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 
 print('Merging upstream and midstream results...')
 upstream = pd.read_excel(sp_dir + '/Upstream/Analytics/all_upstream_results.xlsx')
@@ -16,7 +17,7 @@ upstream['crude_to_refinery(bbl/d)']= (upstream['ES_Crude_output(mmbut/d)']*1e3/
 
 # For oil sands, the crude to refinery volume is bigger than the input oil production volume. 
 # It's interesting and worth exploring why. Is there a mistake in Raghav's mmbtu/d to boe/d calculation? 
-upstream[['Field_name','year']][upstream['crude_to_refinery(bbl/d)']>upstream['Oil production volume']]
+#upstream[['Field_name','year']][upstream['crude_to_refinery(bbl/d)']>upstream['Oil production volume']]
 
 # Calculate NGL_C2 export from the field, formula based on cell G8 in OPEM input tab
 # (Flowsheet!W17+Flowsheet!CP17)*1000/(5.61458350903291*20.98*2.2)
@@ -117,12 +118,12 @@ opem_product_slate = opem_product_slate.T
 opem_product_slate.columns = opem_product_slate.iloc[0]
 opem_product_slate = opem_product_slate.iloc[1:,:]
 
-slate_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
+slate_index = pd.read_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
 opem_product_slate.index = slate_index.iloc[:,0]
 
 opem_product_slate.to_excel(sp_dir + '/Downstream/Analytics/all_product_slates.xlsx')
-opem_product_slate.to_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
+opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
 
@@ -145,18 +146,18 @@ opem_input_T = opem_input.set_index('OPEM_field_name').T
 
 opem_input_T.to_excel(sp_dir+'/Downstream/Analytics/opem_input.xlsx')
 
-opem_input_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_input.csv',header=0)
+opem_input_index = pd.read_csv(opem_dir + '/opem_input.csv',header=0)
 opem_input_T.reset_index(inplace = True)
 
 # Get the index from opem_input.csv and update it with opem input values
 df = pd.concat([opem_input_index.iloc[:,:5],opem_input_T.iloc[:,1:]],axis = 1)
 
-df.to_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_input.csv',index=False)
+df.to_csv(opem_dir + '/opem_input.csv',index=False)
 
 print('Running opem...')
 os.system('opem')
 
-opem_output = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_output.csv',header=1)
+opem_output = pd.read_csv(opem_dir + '/opem_output.csv',header=1)
 
 upstream_midstream_for_opem['estimate_boe/d'] = upstream_midstream_for_opem['Oil production volume']*(1+upstream_midstream_for_opem['Gas-to-oil ratio (GOR)']/5800)
 
