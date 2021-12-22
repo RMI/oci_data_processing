@@ -165,11 +165,9 @@ else:
 final_assay_library_merged.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/final_assay_library.xlsx',index = False)
 
 
-
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
-
-
+final_assay_library_merged.to_sql('assay_library',connection, if_exists='replace', index=False)
 field_assay = pd.read_sql('select * from field_assay_mapping',connection)
 
 #pd.set_option("display.max_rows", 999)
