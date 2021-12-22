@@ -502,6 +502,7 @@ if results_ES_ch4_co2_fs[results_ES_ch4_co2_fs['_merge']!='both'].shape[0]>0:
 else:
     results_ES_ch4_co2_fs.drop(columns = '_merge',inplace = True)
 
+results_ES_ch4_co2_fs['GWP']='100yr'
 results_ES_ch4_co2_fs.to_excel(sp_dir + '/Upstream/Analytics/all_upstream_results.xlsx',index = False)
 
 print('Update upstream results in OCI database...')
