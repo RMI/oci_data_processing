@@ -5,8 +5,10 @@ import numpy as np
 
 import os
 
-d = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/csvs/'
-directory = os.fsencode('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/csvs')
+opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
+sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
+d = sp_dir+ '/Upstream/csvs/'
+directory = os.fsencode(d)
 list_csv =[]
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
@@ -29,28 +31,97 @@ for filename in list_csv:
     if filename.endswith('Results.csv'):
         list_results.append(filename)
 
-column_names = pd.read_csv('/Users/rwang/Documents/OPGEE_Inputs/DevSeed OPGEE inputs.csv').columns.to_list()
-
-column_names += ['e-Total energy consumption','e-Total GHG emissions', 
-                    'e-Total GHG emissions-Combustion/land use','e-Total GHG emissions-VFF',
-                   'd-Total energy consumption','d-Total GHG emissions', 
-                    'd-Total GHG emissions-Combustion/land use','d-Total GHG emissions-VFF',
-                   'p-Total energy consumption','p-Total GHG emissions', 
-                    'p-Total GHG emissions-Combustion/land use','p-Total GHG emissions-VFF',
-                   's-Total energy consumption','s-Total GHG emissions', 
-                    's-Total GHG emissions-Combustion/land use','s-Total GHG emissions-VFF',
-                   'l-Total energy consumption','l-Total GHG emissions', 
-                    'l-Total GHG emissions-Combustion/land use','l-Total GHG emissions-VFF',
-                   'm-Total energy consumption','m-Total GHG emissions', 
-                    'm-Total GHG emissions-Combustion/land use','m-Total GHG emissions-VFF',
-                   'w-Total energy consumption','w-Total GHG emissions', 
-                    'w-Total GHG emissions-Combustion/land use','w-Total GHG emissions-VFF',
-                   't-Total energy consumption','t-Total GHG emissions', 
-                    't-Total GHG emissions-Combustion/land use','t-Total GHG emissions-VFF','t-Loss factor',
-                   'g-Total energy consumption','g-Total GHG emissions', 
-                    'g-Total GHG emissions-Combustion/land use','g-Total GHG emissions-VFF',
-                   'Other small sources','Offsite emissions credit/debit','Lifecycle energy consumption',
-                   'CSS-Total CO2 sequestered','Lifecycle GHG emissions','Field-by-field check']
+column_names =  [    
+'Downhole pump',
+ 'Water reinjection ',
+ 'Natural gas reinjection',
+ 'Water flooding',
+ 'Gas lifting',
+ 'Gas flooding',
+ 'Steam flooding',
+ 'Oil sands mine (integrated with upgrader)',
+ 'Oil sands mine (non-integrated with upgrader)',
+ 'Field location (Country)',
+ 'Field_name',
+ 'Field age',
+ 'Field depth',
+ 'Oil production volume',
+ 'Number of producing wells',
+ 'Number of water injecting wells',
+ 'Production tubing diameter',
+ 'Productivity index',
+ 'Reservoir pressure',
+ 'Reservoir temperature',
+ 'Offshore?',
+ 'API gravity',
+ 'Gas composition N2',
+ 'Gas composition CO2',
+ 'Gas composition C1',
+ 'Gas composition C2',
+ 'Gas composition C3',
+ 'Gas composition C4+',
+ 'Gas composition H2S',
+ 'Gas-to-oil ratio (GOR)',
+ 'Water-to-oil ratio (WOR)',
+ 'Water injection ratio',
+ 'Gas lifting injection ratio',
+ 'Gas flooding injection ratio',
+ 'Flood gas ',
+ 'Liquids unloading practice',
+ 'Fraction of CO2 breaking through to producers',
+ 'Source of makeup CO2',
+ 'Percentage of sequestration credit assigned to the oilfield',
+ 'Steam-to-oil ratio (SOR)',
+ 'Fraction of required electricity generated onsite',
+ 'Fraction of remaining natural gas reinjected',
+ 'Fraction of produced water reinjected',
+ 'Fraction of steam generation via cogeneration ',
+ 'Fraction of steam generation via solar thermal',
+ 'Heater/treater',
+ 'Stabilizer column',
+ 'Upgrader type',
+ 'Associated Gas Processing Path',
+ 'Flaring-to-oil ratio',
+ 'Venting-to-oil ratio (purposeful)',
+ 'Volume fraction of diluent',
+ 'Low carbon richness (semi-arid grasslands)',
+ 'Moderate carbon richness (mixed)',
+ 'High carbon richness (forested)',
+ 'Low intensity development and low oxidation',
+ 'Moderate intensity development and moderate oxidation',
+ 'High intensity development and high oxidation',
+ 'Ocean tanker',
+ 'Barge',
+ 'Pipeline',
+ 'Rail',
+ 'Truck',
+ 'Transport distance (one way) - Ocean tanker',
+ 'Transport distance (one way) - Barge',
+ 'Transport distance (one way) - Pipeline',
+ 'Transport distance (one way) - Rail',
+ 'Transport distance (one way) - Truck',
+ 'Ocean tanker size, if applicable',
+ 'Small sources emissions',
+ 'e-Total energy consumption','e-Total GHG emissions', 
+    'e-Total GHG emissions-Combustion/land use','e-Total GHG emissions-VFF',
+    'd-Total energy consumption','d-Total GHG emissions', 
+    'd-Total GHG emissions-Combustion/land use','d-Total GHG emissions-VFF',
+    'p-Total energy consumption','p-Total GHG emissions', 
+    'p-Total GHG emissions-Combustion/land use','p-Total GHG emissions-VFF',
+    's-Total energy consumption','s-Total GHG emissions', 
+    's-Total GHG emissions-Combustion/land use','s-Total GHG emissions-VFF',
+    'l-Total energy consumption','l-Total GHG emissions', 
+    'l-Total GHG emissions-Combustion/land use','l-Total GHG emissions-VFF',
+    'm-Total energy consumption','m-Total GHG emissions', 
+    'm-Total GHG emissions-Combustion/land use','m-Total GHG emissions-VFF',
+    'w-Total energy consumption','w-Total GHG emissions', 
+    'w-Total GHG emissions-Combustion/land use','w-Total GHG emissions-VFF',
+    't-Total energy consumption','t-Total GHG emissions', 
+    't-Total GHG emissions-Combustion/land use','t-Total GHG emissions-VFF','t-Loss factor',
+    'g-Total energy consumption','g-Total GHG emissions', 
+    'g-Total GHG emissions-Combustion/land use','g-Total GHG emissions-VFF',
+    'Other small sources','Offsite emissions credit/debit','Lifecycle energy consumption',
+    'CSS-Total CO2 sequestered','Lifecycle GHG emissions','Field-by-field check']
 
 # function to extract results from one csv an store in a dataframe
 def clean_df(df,column_names):
@@ -387,15 +458,13 @@ flowsheet = pd.DataFrame({'Field_name':Field_name,'Scenario':Scenario,'toggle_va
 
 results_ES_ch4_co2_fs =pd.merge(results_ES_ch4_co2,flowsheet, left_on=merge_keys,right_on=merge_keys,how='left')
 
-results_ES_ch4_co2_fs.to_excel('./Analytics/all_upstream_results.xlsx',index = False)
+results_ES_ch4_co2_fs.to_excel(sp_dir+'/Deep Dive page/Analytics/all_upstream_results.xlsx',index = False)
 
 upstream = results_ES_ch4_co2_fs
 
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-
-midstream = pd.read_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx')
-
-
+import sqlite3
+connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
+midstream = pd.read_sql('select * from midstream_results',connection)
 
 # Scaling emission fraction from GWP100 to GWP 20 
 
@@ -408,13 +477,11 @@ denominator = (midstream['emission_frac_CO2']+midstream['emission_frac_CH4']/GWP
             midstream['emission_frac_N2O']/GWP100_N2O*GWP20_N2O)
 
 
-midstream['emission_frac_CO2_20yr'] = midstream['emission_frac_CO2']/denominator 
-midstream['emission_frac_CH4_20yr'] = midstream['emission_frac_CH4']/GWP100_CH4*GWP20_CH4/denominator 
-midstream['emission_frac_N2O_20yr']=midstream['emission_frac_N2O']/GWP100_N2O*GWP20_N2O/denominator 
+midstream['emission_frac_CO2'] = midstream['emission_frac_CO2']/denominator 
+midstream['emission_frac_CH4'] = midstream['emission_frac_CH4']/GWP100_CH4*GWP20_CH4/denominator 
+midstream['emission_frac_N2O']=midstream['emission_frac_N2O']/GWP100_N2O*GWP20_N2O/denominator 
 midstream['GWP'] ='20yr'
-midstream.rename(columns = {'emission_frac_CO2_20yr':'emission_frac_CO2',
-                           'emission_frac_CH4_20yr':'emission_frac_CH4',
-                           'emission_frac_N2O_20yr':'emission_frac_N2O'},inplace = True)
+
 
 # Calculate Crude to Refinery in bbl/d from Energy Summary tab of OPGEE model. Formula is based on cell G6 in OPEM input tab  
 #https://rockmtnins.sharepoint.com/:x:/r/sites/CAE/_layouts/15/Doc.aspx?sourcedoc=%7B5E0994C9-8E35-440B-8BB4-31DF5167F60C%7D&file=OCI%20site%20input%20table%20sources.xlsx&action=default&mobileredirect=true&cid=544ad233-565f-438c-9ce2-d7d5b607b1da
@@ -525,12 +592,12 @@ opem_product_slate = opem_product_slate.T
 opem_product_slate.columns = opem_product_slate.iloc[0]
 opem_product_slate = opem_product_slate.iloc[1:,:]
 
-slate_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
+slate_index = pd.read_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
 opem_product_slate.index = slate_index.iloc[:,0]
 
-opem_product_slate.to_excel('./Analytics/all_product_slates.xlsx')
-opem_product_slate.to_csv('/Users/rwang/Documents/OCI+/Downstream/opem/src/opem/products/product_slates/all_product_slates.csv')
+opem_product_slate.to_excel(sp_dir + '/Deep Dive page/Analytics/all_product_slates.xlsx')
+opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
 
@@ -551,20 +618,20 @@ opem_input['GWP selection (yr period, 100 or 20)']=20
 
 opem_input_T = opem_input.set_index('OPEM_field_name').T
 
-opem_input_T.to_excel('./Analytics/opem_input.xlsx')
+opem_input_T.to_excel(sp_dir + '/Deep Dive page/Analytics/opem_input.xlsx')
 
-opem_input_index = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_input.csv',header=0)
+opem_input_index = pd.read_csv(opem_dir + '/opem_input.csv',header=0)
 opem_input_T.reset_index(inplace = True)
 
 # Get the index from opem_input.csv and update it with opem input values
 df = pd.concat([opem_input_index.iloc[:,:5],opem_input_T.iloc[:,1:]],axis = 1)
 
-df.to_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_input.csv',index=False)
+df.to_csv(opem_dir + '/opem_input.csv',index=False)
 
 print('Running opem...')
 os.system('opem')
 
-opem_output = pd.read_csv('/Users/rwang/Documents/OCI+/Downstream/opem/opem_output.csv',header=1)
+opem_output = pd.read_csv(opem_dir +'/opem_output.csv',header=1)
 
 upstream_midstream_for_opem['estimate_boe/d'] = upstream_midstream_for_opem['Oil production volume']*(1+upstream_midstream_for_opem['Gas-to-oil ratio (GOR)']/5800)
 
@@ -577,5 +644,10 @@ opem_output_T.to_excel('opem_output.xlsx',index=False)
 opem_output_T = pd.read_excel('opem_output.xlsx')
 
 up_mid_down = upstream_midstream_for_opem.merge(opem_output_T,left_on='OPEM_field_name',right_on ='index',how='left')
-up_mid_down.to_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new.xlsx')
+up_mid_down.to_excel(sp_dir+'/Deep Dive page/Analytics/up_mid_down_scenario.xlsx')
+up_mid_down.to_sql('scenario_up_mid_down_results',connection, if_exists='replace', index=False)
 print('OPEM run completed and up_mid_down file updated.')
+
+
+
+

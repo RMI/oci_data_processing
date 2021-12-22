@@ -61,7 +61,7 @@ OCI_infobase['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Tot
 OCI_infobase['Upstream Methane Intensity (kgCH4/boe)']=(up_mid_down['venting_ch4_uponly(t/d)']+up_mid_down['fugitive_ch4_uponly(t/d)']+up_mid_down['flaring_ch4(t/d)'])*365\
 /(OCI_infobase['2020 Total Oil and Gas Production Volume (boe)'])*1000
 
-# Midstream Methane Intensity calculation, use 20yr total emission from midstream runs and get fraction of CO2eq and convert back to methane 
+# Midstream Methane Intensity calculation, use 100yr total emission from midstream runs and get fraction of CO2eq and convert back to methane 
 OCI_infobase['Midstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total refinery processes']\
     *OCI_infobase['2020 Crude Production Volume (bbl)']/OCI_infobase['2020 Crude Production Volume (bbl)']\
     *up_mid_down['emission_frac_CH4']/30
