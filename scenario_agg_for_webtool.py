@@ -97,7 +97,7 @@ scenario=scenario[['Field Name', 'Country', 'Scenario','toggle_value',
 'Upstream Carbon Intensity (kgCO2eq/boe)', 'Midstream Carbon Intensity (kgCO2eq/boe)','Downstream Carbon Intensity (kgCO2eq/boe)']]
 scenario['2020 Total Oil and Gas Production Volume (boe)']=up_mid_down['Total BOE Produced']*365
 scenario_agg = scenario.merge(agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
-scenario_agg.drop(columns =[['Field Name','Field name']])
+scenario_agg.drop(columns =['Field Name','Field name'])
 
 def w_avg(x,column_to_be_averaged,weight):
     return(np.average(x[column_to_be_averaged], 
@@ -109,6 +109,6 @@ scenario_aggregated = pd.concat([
 scenario_agg.groupby(['Country','Aggregation','Scenario','toggle_value']).apply(
     lambda x:w_avg(x,col,'2020 Total Oil and Gas Production Volume (boe)')).rename(col) 
     for col in columns_to_be_averaged],axis=1)
-scenario_agg.to_excel(sp_dir + '/Deep Dive page/Analytics/scenario_agg.xlsx')
+scenario_aggregated.to_excel(sp_dir + '/Deep Dive page/Analytics/scenario_agg.xlsx')
 
 
