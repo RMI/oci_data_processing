@@ -5,7 +5,7 @@ import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 up_mid_down = pd.read_sql('select * from up_mid_downstream_results',connection)
 # select only 2020 results for webtool
-up_mid_down = up_mid_down[up_mid_down['year']=='2020']
+up_mid_down = up_mid_down[up_mid_down['year']=='2020'].reset_index()
 
 OCI_infobase=pd.DataFrame()
 
@@ -132,7 +132,8 @@ for i in upstream_emission_category:
 OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in upstream_emission_category])
 
 def midstream_scaler(x):
-    return(up_mid_down[x]*OCI_infobase['2020 Crude Production Volume (bbl)']/OCI_infobase['2020 Total Oil and Gas Production Volume (boe)'])
+    '''scale midstream emission from kgCO2eq/bbl to kgCO2eq/boe'''
+    return(up_mid_down[x]*up_mid_down['Oil production volume']/up_mid_down['Total BOE Produced'])
 
 midstream_emission_category_CO2 ={
     'Midstream: Electricity (kgCO2eq/boe)':'Electricity',
@@ -143,8 +144,12 @@ midstream_emission_category_CO2 ={
     'Midstream: Other Emissions (kgCO2eq/boe)':'Other Emissions'
 }
 
+
+
 for i in midstream_emission_category_CO2:
     OCI_info100[i] = midstream_scaler(midstream_emission_category_CO2[i])
+
+
 
 OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in midstream_emission_category_CO2])
 
@@ -338,7 +343,7 @@ OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Fiel
 
 OCI_infobase_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/infobase.csv',index = False)
 
-OCI_info100['2020 Total Oil and Gas Production Volume (boe)']= OCI_infobase['2020 Total Oil and Gas Production Volume (boe)']
+OCI_info100['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total BOE Produced']*365
 
 OCI_info100_agg = pd.merge(OCI_info100, agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
 
@@ -396,7 +401,7 @@ OCI_info100_aggregated = OCI_info100_aggregated[(OCI_info100_aggregated['Field N
 
 OCI_info100_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/info100.csv',index = False)
 
-OCI_info20['2020 Total Oil and Gas Production Volume (boe)']= OCI_infobase['2020 Total Oil and Gas Production Volume (boe)']
+OCI_info20['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total BOE Produced']*365
 
 OCI_info20_agg = pd.merge(OCI_info20, agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
 
