@@ -97,7 +97,7 @@ scenario=scenario[['Field Name', 'Country', 'Scenario','toggle_value',
 'Upstream Carbon Intensity (kgCO2eq/boe)', 'Midstream Carbon Intensity (kgCO2eq/boe)','Downstream Carbon Intensity (kgCO2eq/boe)']]
 scenario['2020 Total Oil and Gas Production Volume (boe)']=up_mid_down['Total BOE Produced']*365
 scenario_agg = scenario.merge(agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
-scenario_agg.drop(columns =['Field Name','Field name'])
+scenario_agg.drop(columns =['Field Name','Field name'],inplace = True)
 
 def w_avg(x,column_to_be_averaged,weight):
     return(np.average(x[column_to_be_averaged], 
