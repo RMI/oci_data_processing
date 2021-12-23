@@ -13,8 +13,14 @@ list_csv =[]
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
     if filename.endswith('.csv') and not filename.startswith('2'): 
-        #print(filename)
-        list_csv.append(filename)
+        if filename.startswith('Vent-fug'): 
+            os.rename(d+filename, d+'Vent_fug'+filename[8:])
+            list_csv.append('Vent_fug'+filename[8:])
+        if filename.startswith('TS'):
+            os.rename(d+filename, d+filename[:7]+'-'+filename[8:])
+            list_csv.append(filename[:7]+'-'+filename[8:])
+        else:
+            list_csv.append(filename)
         continue
     else:
         continue
@@ -140,6 +146,7 @@ def clean_df(df,column_names):
 
 list_df =[]
 for file in list_results:
+    print(file)
     df = pd.read_csv(d+file,header = None)  
     result = clean_df(df,column_names)
     result['Scenario']=file.split('-')[0]
