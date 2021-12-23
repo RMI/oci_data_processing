@@ -66,17 +66,16 @@ for assay_group in onehundredyr_assay_file_list:
     #print(assay_group)
     df_list = []
     for assay_file in onehundredyr_assay_file_list[assay_group]:
-        df_list.append(extract_product_slate(assay_file))
-        
-        df =pd.concat([parameter,pd.concat(df_list,axis = 1)],axis=1)
-        df.columns = df.iloc[0] 
-        df = df[1:]
-        df = df.T
-        df.columns = df.iloc[0]
-        df = df[1:]
-        df = df.astype('float',errors='ignore')
-        #df['assay_group']=assay_group
-        onehundredyr_assay_slates_df[assay_group]= df    
+        df_list.append(extract_product_slate(assay_file))        
+    df =pd.concat([parameter,pd.concat(df_list,axis = 1)],axis=1)
+    df.columns = df.iloc[0] 
+    df = df[1:]
+    df = df.T
+    df.columns = df.iloc[0]
+    df = df[1:]
+    df = df.astype('float',errors='ignore')
+    #df['assay_group']=assay_group
+    onehundredyr_assay_slates_df[assay_group]= df    
 
 final_assay_library = pd.concat(onehundredyr_assay_slates_df,axis = 0)
 
@@ -167,7 +166,7 @@ final_assay_library_merged.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics
 
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
-final_assay_library_merged.to_sql('assay_library',connection, if_exists='replace', index=False)
+#final_assay_library_merged.to_sql('assay_library',connection, if_exists='replace', index=False)
 field_assay = pd.read_sql('select * from field_assay_mapping',connection)
 
 #pd.set_option("display.max_rows", 999)
