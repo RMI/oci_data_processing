@@ -467,8 +467,9 @@ results_ES_ch4_co2_fs =pd.merge(results_ES_ch4_co2,flowsheet, left_on=merge_keys
 
 results_ES_ch4_co2_fs.to_excel(sp_dir+'/Deep Dive page/Analytics/all_upstream_results.xlsx',index = False)
 
-upstream = results_ES_ch4_co2_fs
-
+upstream = results_ES_ch4_co2_fs 
+upstream=upstream[upstream['Scenario']!='Cogeneration'] #remove co-gen scenario
+upstream = upstream[upstream['Field_name']!='Amenamkpono'] #remove the nigeria field
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 upstream.to_sql('scenario_upstream_results',connection, if_exists='replace',index = False)
