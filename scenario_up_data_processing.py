@@ -470,6 +470,7 @@ results_ES_ch4_co2_fs.to_excel(sp_dir+'/Deep Dive page/Analytics/all_upstream_re
 upstream = results_ES_ch4_co2_fs 
 upstream=upstream[upstream['Scenario']!='Cogeneration'] #remove co-gen scenario
 upstream = upstream[upstream['Field_name']!='Amenamkpono'] #remove the nigeria field
+
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 upstream.to_sql('scenario_upstream_results',connection, if_exists='replace',index = False)
