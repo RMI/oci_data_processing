@@ -465,9 +465,33 @@ flowsheet = pd.DataFrame({'Field_name':Field_name,'Scenario':Scenario,'toggle_va
 
 results_ES_ch4_co2_fs =pd.merge(results_ES_ch4_co2,flowsheet, left_on=merge_keys,right_on=merge_keys,how='left')
 
-results_ES_ch4_co2_fs.to_excel(sp_dir+'/Deep Dive page/Analytics/all_upstream_results.xlsx',index = False)
+# Extract data from GHG summary.csv files
+list_GHGS=[]
+for filename in list_csv:
+    if filename.endswith('GHG Summary.csv'):
+        list_GHGS.append(filename)
 
-upstream = results_ES_ch4_co2_fs 
+Field_name = []
+original_file = []
+Scenario = []
+toggle_value = []
+combustion_to_totalGHG = []
+
+for file in list_GHGS:
+    df = pd.read_csv(d+file,header=None)
+    combustion_to_totalGHG.append(float(df.iloc[18,7])/float(df.iloc[18,12])) #H19/M19
+    Field_name.append(('-'.join(file.split('-')[3:-1])).strip())
+    Scenario.append(file.split('-')[0])
+    toggle_value.append(file.split('-')[1])
+    original_file.append(file.split('-')[2])
+    
+combustion = pd.DataFrame({'Field_name':Field_name,'Scenario':Scenario,'toggle_value':toggle_value,'original_file':original_file,
+                   'combustion_ratio':combustion_to_totalGHG})
+
+results_ES_ch4_co2_fs_ghg =pd.merge(results_ES_ch4_co2_fs,combustion, left_on=merge_keys,right_on=merge_keys,how='left')
+results_ES_ch4_co2_fs_ghg.to_excel(sp_dir+'/Deep Dive page/Analytics/all_upstream_results.xlsx',index = False)
+
+upstream = results_ES_ch4_co2_fs_ghg 
 upstream=upstream[upstream['Scenario']!='Cogeneration'] #remove co-gen scenario
 upstream = upstream[upstream['Field_name']!='Amenamkpono'] #remove the nigeria field
 
