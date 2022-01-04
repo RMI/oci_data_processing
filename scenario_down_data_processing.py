@@ -69,8 +69,8 @@ def opem_input_prep(upstream,midstream):
     upstream_midstream_for_opem['Product Slate (bbl product per day)'] = ''
     upstream_midstream_for_opem['energy_flow_MJ']=''
     upstream_midstream_for_opem['mass_flow_kg']=''
-    upstream_midstream_for_opem['Liquefied Petroleum Gases (LPG)_bbl']= upstream_midstream_for_opem['Liquified Petroleum Gas (LPG)']/270
-    upstream_midstream_for_opem['Petrochemical Feedstocks_bbl']=upstream_midstream_for_opem['Petrochemical Feedstocks']/270
+    upstream_midstream_for_opem['Liquefied Petroleum Gases (LPG)_bbl']= upstream_midstream_for_opem['Liquified Petroleum Gas (LPG).1']/270
+    upstream_midstream_for_opem['Petrochemical Feedstocks_bbl']=upstream_midstream_for_opem['Petrochemical Feedstocks.1']/270
     upstream_midstream_for_opem['Asphalt_bbl']= 0
 
     upstream_midstream_for_opem['emission(kgCO2eq/bbl)']='kgCO2eq/bbl'
@@ -182,8 +182,6 @@ upstream = pd.read_sql('select * from scenario_upstream_results',connection)
 midstream = pd.read_sql('select * from scenario_midstream_results_nondefault',connection)
 default_refinery_table =pd.read_sql('SELECT opgee_field, opgee_country, "Default Refinery" FROM midstream_results',connection)
 
-
-
 # Inner join to select only the default refinery type for midstream results
 default_refinery_table.rename(columns = {'Default Refinery':'Refinery Type'},inplace = True)
 midstream_default = midstream.merge(default_refinery_table,how ='inner')
@@ -195,9 +193,9 @@ print('Running opem...')
 os.system('opem')
 up_mid_down_uptoggle = opem_output_prep(upstream_midstream_for_opem_uptoggle)
 # set stage of the sensitivity analysis 
-up_mid_down_uptoggle['stage']=np.where(up_mid_down_uptoggle['Scenario']=='LNG','Downstream','Upstream')
+up_mid_down_uptoggle['toggle_stage']=np.where(up_mid_down_uptoggle['Scenario']=='LNG','Downstream','Upstream')
 
-print(up_mid_down_uptoggle.shape)
+#print(up_mid_down_uptoggle.shape)
 
 # #==========Start Midstream Toggle Sensitiviy Runs ===================
 
@@ -213,7 +211,7 @@ print(up_mid_down_uptoggle.shape)
 # print('Running opem...')
 # os.system('opem')
 # up_mid_down_midtoggle = opem_output_prep(upstream_midstream_for_opem_midtoggle)
-# up_mid_down_midtoggle['stage']='Midstream'
+# up_mid_down_midtoggle['toggle_stage']='Midstream'
 # print(up_mid_down_midtoggle.shape)
 
-up_mid_down_uptoggle.to_sql('scenario_up_mid_down_results',connection, if_exists='replace', index=False)
+#up_mid_down_uptoggle.to_sql('scenario_up_mid_down_results',connection, if_exists='replace', index=False)
