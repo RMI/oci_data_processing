@@ -27,7 +27,7 @@ def opem_input_prep(upstream,midstream):
     # Flowsheet!W18*1000000/(42*1920)+Flowsheet!W9*(1000000)*0.75/(1923*42) assuming 75% of LPG exported is C3
     upstream['NGL_C3(boed)'] = upstream['FS_LPG_export_C3(t/d)']*1000000/(42*1920)+upstream['FS_LPG_export_LPG(t/d)']*(1000000)*0.75/(1923*42)
 
-    # Calculate NGL_C4 export from the field, formula based on cell G10 in OPEM input tab
+    # Calculate NGL_C4 export from the dfield, formula based on cell G10 in OPEM input tab
     # Flowsheet!W19*1000000/(42*2213)+Flowsheet!W9*(1000000)*0.25/(1923*42) assuming 25% of LPG exported is C4
     upstream['NGL_C4(boed)'] = upstream['FS_LPG_export_C4(t/d)']*1000000/(42*2213)+upstream['FS_LPG_export_LPG(t/d)']*(1000000)*0.25/(1923*42)
 
@@ -182,9 +182,13 @@ upstream = pd.read_sql('select * from scenario_upstream_results',connection)
 midstream = pd.read_sql('select * from scenario_midstream_results_nondefault',connection)
 default_refinery_table =pd.read_sql('SELECT opgee_field, opgee_country, "Default Refinery" FROM midstream_results',connection)
 
+
+
 # Inner join to select only the default refinery type for midstream results
 default_refinery_table.rename(columns = {'Default Refinery':'Refinery Type'},inplace = True)
 midstream_default = midstream.merge(default_refinery_table,how ='inner')
+
+
 upstream_midstream_for_opem_uptoggle = opem_input_prep(upstream,midstream_default)
 
 print('Running opem...')
