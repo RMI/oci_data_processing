@@ -132,7 +132,7 @@ final_assay_library['assay_name']=final_assay_library.apply(lambda x: assay_name
 
 
 
-final_assay_library
+#final_assay_library
 
 assay_files = {'haverly':[sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly PRELIM Assays.xlsx',535],
               'prelim':[sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM Assays.xlsx',149],
