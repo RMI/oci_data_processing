@@ -195,23 +195,24 @@ up_mid_down_uptoggle = opem_output_prep(upstream_midstream_for_opem_uptoggle)
 # set stage of the sensitivity analysis 
 up_mid_down_uptoggle['toggle_stage']=np.where(up_mid_down_uptoggle['Scenario']=='LNG','Downstream','Upstream')
 
-#print(up_mid_down_uptoggle.shape)
 
-# #==========Start Midstream Toggle Sensitiviy Runs ===================
 
-# up_default_tog = pd.DataFrame.from_dict({'Scenario':['CCS','Electrify','Flare_efficiency','LNG','Solarsteam','TS','Vent_fug','Water'],
-#               'toggle_value':['def','Off','def','off','def','2020','def','def']})
-# upstream_default = upstream.merge(up_default_tog,how='inner')
+# upstream_default = upstream[(upstream['Scenario']=='Electrify' )&( upstream['toggle_value']=='Off')]
+
+# # #==========Start Midstream Toggle Sensitiviy Runs ===================
+
 
 
 
 # upstream_midstream_for_opem_midtoggle = opem_input_prep(upstream_default,midstream)
 # upstream_midstream_for_opem_midtoggle['Scenario']= 'Refinery Type'
-# upstream_midstream_for_opem_midtoggle['Scenario'] = upstream_midstream_for_opem_midtoggle['Refinery Type']
+# upstream_midstream_for_opem_midtoggle['toggle_value'] = upstream_midstream_for_opem_midtoggle['Refinery Type']
 # print('Running opem...')
 # os.system('opem')
 # up_mid_down_midtoggle = opem_output_prep(upstream_midstream_for_opem_midtoggle)
 # up_mid_down_midtoggle['toggle_stage']='Midstream'
 # print(up_mid_down_midtoggle.shape)
 
-#up_mid_down_uptoggle.to_sql('scenario_up_mid_down_results',connection, if_exists='replace', index=False)
+
+
+up_mid_down_uptoggle.to_sql('scenario_up_mid_down_results',connection, if_exists='replace', index=False)
