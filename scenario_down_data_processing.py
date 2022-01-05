@@ -58,6 +58,7 @@ def opem_input_prep(upstream,midstream):
     upstream_midstream_for_opem = upstream_midstream
 
     upstream_midstream_for_opem['OPEM_field_name']=(upstream_midstream_for_opem['opgee_field']+';'
+                                                    +upstream_midstream_for_opem['original_file']+';'
                                                     +upstream_midstream_for_opem['Scenario']+';'
                                                     +upstream_midstream_for_opem['toggle_value'])
                                                     
