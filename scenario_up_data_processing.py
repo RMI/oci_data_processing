@@ -17,8 +17,12 @@ for file in os.listdir(directory):
             os.rename(d+filename, d+'Vent_fug'+filename[8:])
             list_csv.append('Vent_fug'+filename[8:])
         if filename.startswith('TS'):
-            os.rename(d+filename, d+filename[:7]+'-'+filename[8:])
-            list_csv.append(filename[:7]+'-'+filename[8:])
+            nfilename = filename[:7]+'-'+filename[8:]
+            os.rename(d+filename, d+nfilename)
+            if '-OML 11' in nfilename:
+                os.rename(d+nfilename, d+nfilename.replace('-OML 11','-Bonny OML 11'))
+                nfilename = nfilename.replace('-OML 11','-Bonny OML 11')
+            list_csv.append(nfilename)
         else:
             list_csv.append(filename)
         continue
