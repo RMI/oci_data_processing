@@ -35,7 +35,8 @@ for i in upstream_emission_category:
     scenario[i] = upstream_gmj_kgboe_convert(upstream_emission_category[i])
 
 scenario['Upstream Carbon Intensity (kgCO2eq/boe)']=sum([scenario[i] for i in upstream_emission_category])
-
+# Adjust the combustion ratio for Electrifying Scenario 
+scenario['Upstream Carbon Intensity (kgCO2eq/boe)'] = np.where((scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='On'), scenario['Upstream Carbon Intensity (kgCO2eq/boe)']*(1-up_mid_down['combustion_ratio']),scenario['Upstream Carbon Intensity (kgCO2eq/boe)'])
 def midstream_scaler(x):
     return(up_mid_down[x]*up_mid_down['Oil production volume']/up_mid_down['Total BOE Produced'])
 
@@ -98,10 +99,13 @@ scenario=scenario[['Field Name', 'Country', 'Scenario','toggle_value',
 scenario['2020 Total Oil and Gas Production Volume (boe)']=up_mid_down['Total BOE Produced']*365
 scenario_agg = scenario.merge(agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
 scenario_agg.drop(columns =['Field Name','Field name'],inplace = True)
+# Remove solar steam 68 cases 
+scenario_agg = scenario_agg[~((scenario_agg['Scenario']=='Solarsteam')&(scenario_agg['toggle_value']=='68'))]
 
 def w_avg(x,column_to_be_averaged,weight):
     return(np.average(x[column_to_be_averaged], 
                       weights = x[weight]))
+
 
 columns_to_be_averaged = ['Upstream Carbon Intensity (kgCO2eq/boe)', 'Midstream Carbon Intensity (kgCO2eq/boe)','Downstream Carbon Intensity (kgCO2eq/boe)']
 
@@ -109,6 +113,7 @@ scenario_aggregated = pd.concat([
 scenario_agg.groupby(['Country','Aggregation','Scenario','toggle_value']).apply(
     lambda x:w_avg(x,col,'2020 Total Oil and Gas Production Volume (boe)')).rename(col) 
     for col in columns_to_be_averaged],axis=1)
-scenario_aggregated.to_excel(sp_dir + '/Deep Dive page/Analytics/scenario_agg.xlsx')
+
+scenario_aggregated.to_excel(sp_dir + '/Deep Dive page/Analytics/scenario_agg_1.xlsx')
 
 
