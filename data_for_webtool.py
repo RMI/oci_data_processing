@@ -154,8 +154,13 @@ for i in midstream_emission_category_CO2:
 OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in midstream_emission_category_CO2])
 
 # Downstream Transport to Consumer include refinery product transport and NGL transport
-OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)'] =up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE)']+\
+OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] =up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE)']+\
 up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE).1'] 
+
+OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] = upstream_gmj_kgboe_convert('l-Total GHG emissions')
+OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'] = upstream_gmj_kgboe_convert('g-Total GHG emissions')
+OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)'] = OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] +\
+    OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']
 
 OCI_info100['Downstream: Gasoline for Cars (kgCO2eq/boe)']=\
     up_mid_down['Gasoline Combustion Emissions Intensity (kg CO2eq. / BOE)']
@@ -176,11 +181,9 @@ OCI_info100['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] = \
 OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
     up_mid_down['Total Process Emissions Intensity (kg CO2eq./boe total)']
 
-# Adding OPGEE LNG and Natural Gas distribution into OPEM's Natural Gas Combustion 
-OCI_info100['Dwonstream: Natural Gas (kgCO2eq/boe)'] = \
-    up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']\
-    +upstream_gmj_kgboe_convert('l-Total GHG emissions')+upstream_gmj_kgboe_convert('g-Total GHG emissions')
-
+OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)'] = \
+    up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']
+    
 OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)']\
     + OCI_info100['Downstream: Gasoline for Cars (kgCO2eq/boe)'] \
     + OCI_info100['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']\
@@ -191,7 +194,7 @@ OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info100['Downstre
     + OCI_info100['Downstream: Natural Gas Liquids (kgCO2eq/boe)']\
     + OCI_info100['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] \
     + OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']\
-    + OCI_info100['Dwonstream: Natural Gas (kgCO2eq/boe)'] 
+    + OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)'] 
 
 OCI_info100['Total Emission Carbon Intensity (kgCO2eq/boe)']=OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']+\
 OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']+OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)']
@@ -370,6 +373,9 @@ columns_to_be_averaged = ['Upstream: Exploration (kgCO2eq/boe)',
  'Midstream: Hydrogen via CNR (kgCO2eq/boe)',
  'Midstream: Other Emissions (kgCO2eq/boe)',
  'Midstream Carbon Intensity (kgCO2eq/boe)',
+ 'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)',
+ 'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)',
+ 'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)',
  'Downstream: Transport to Consumers (kgCO2eq/boe)',
  'Downstream: Gasoline for Cars (kgCO2eq/boe)',
  'Downstream: Jet Fuel for Planes (kgCO2eq/boe)',
@@ -380,7 +386,7 @@ columns_to_be_averaged = ['Upstream: Exploration (kgCO2eq/boe)',
  'Downstream: Natural Gas Liquids (kgCO2eq/boe)',
  'Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)',
  'Downstream: Petrochemical Feedstocks (kgCO2eq/boe)',
- 'Dwonstream: Natural Gas (kgCO2eq/boe)',
+ 'Downstream: Natural Gas (kgCO2eq/boe)',
  'Downstream Carbon Intensity (kgCO2eq/boe)',
  'Total Emission Carbon Intensity (kgCO2eq/boe)',
  'Industry GHG Responsibility (kgCO2eq/boe)',
