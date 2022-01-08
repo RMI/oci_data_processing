@@ -115,6 +115,7 @@ def assay_name_20yr(assay_group,assay_id):
             return assay_name.strip()
 
 final_assay_library['assay_name']=final_assay_library.apply(lambda x: assay_name_20yr(x['assay_group'],x['assay_id']),axis=1)
+final_assay_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_library.xlsx',index = False)
 
 # Get throughput and sulfur content values from the three assay files and merge into the assay library
 
@@ -153,8 +154,10 @@ assay_bbl_sulfur_library.drop(columns = 'index',inplace = True)
 assay_bbl_sulfur_library = assay_bbl_sulfur_library.groupby(['assay_group','assay_name']).first()
 
 assay_bbl_sulfur_library.reset_index(inplace = True)
+assay_bbl_sulfur_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_bbl_sulfur_library.xlsx',index = False)
 
 final_assay_library_merged = final_assay_library.merge(assay_bbl_sulfur_library,how = 'left',indicator = True)
+
 
 if final_assay_library_merged[final_assay_library_merged['_merge']!='both'].shape[0]>0:
     print('unmerged, check results.')
