@@ -56,7 +56,8 @@ scenario['Midstream Carbon Intensity (kgCO2eq/boe)']=sum([scenario[i] for i in m
 
 # Downstream Transport to Consumer include refinery product transport and NGL transport
 scenario['Downstream: Transport to Consumers (kgCO2eq/boe)'] =up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE)']+\
-up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE).1'] 
+up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE).1']+upstream_gmj_kgboe_convert('l-Total GHG emissions')+upstream_gmj_kgboe_convert('g-Total GHG emissions')
+ 
 
 scenario['Downstream: Gasoline for Cars (kgCO2eq/boe)']=\
     up_mid_down['Gasoline Combustion Emissions Intensity (kg CO2eq. / BOE)']
@@ -78,10 +79,9 @@ scenario['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
     up_mid_down['Total Process Emissions Intensity (kg CO2eq./boe total)']
 
 # Adding OPGEE LNG and Natural Gas distribution into OPEM's Natural Gas Combustion 
-scenario['Dwonstream: Natural Gas (kgCO2eq/boe)'] = \
-    up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']\
-    +upstream_gmj_kgboe_convert('l-Total GHG emissions')+upstream_gmj_kgboe_convert('g-Total GHG emissions')
-
+scenario['Downstream: Natural Gas (kgCO2eq/boe)'] = \
+    up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']
+    
 scenario['Downstream Carbon Intensity (kgCO2eq/boe)'] = scenario['Downstream: Transport to Consumers (kgCO2eq/boe)']\
     + scenario['Downstream: Gasoline for Cars (kgCO2eq/boe)'] \
     + scenario['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']\
@@ -92,7 +92,7 @@ scenario['Downstream Carbon Intensity (kgCO2eq/boe)'] = scenario['Downstream: Tr
     + scenario['Downstream: Natural Gas Liquids (kgCO2eq/boe)']\
     + scenario['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] \
     + scenario['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']\
-    + scenario['Dwonstream: Natural Gas (kgCO2eq/boe)'] 
+    + scenario['Downstream: Natural Gas (kgCO2eq/boe)'] 
 
 scenario=scenario[['Field Name', 'Country', 'Scenario','toggle_value',
 'Upstream Carbon Intensity (kgCO2eq/boe)', 'Midstream Carbon Intensity (kgCO2eq/boe)','Downstream Carbon Intensity (kgCO2eq/boe)']]
