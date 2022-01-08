@@ -4,6 +4,7 @@ import numpy as np
 # Get the directory of all csv files
 
 import os
+#os.system("az storage blob download-batch --destination '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/csvs' --source csvs --sas-token '?sv=2020-08-04&ss=bfqt&srt=sco&sp=rl&se=2022-10-14T03:32:20Z&st=2021-10-13T19:32:20Z&spr=https&sig=WL8KGvOgEve5iluhVafKP0MMMkkBOPmluV3%2B8LGAFb8%3D' --account-name ocirmistorage")
 
 opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
