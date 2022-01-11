@@ -159,8 +159,8 @@ up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE).1']
 
 OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] = upstream_gmj_kgboe_convert('l-Total GHG emissions')
 OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'] = upstream_gmj_kgboe_convert('g-Total GHG emissions')
-OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)'] = OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] +\
-    OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']
+#OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)'] = OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] +\
+#    OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']
 
 OCI_info100['Downstream: Gasoline for Cars (kgCO2eq/boe)']=\
     up_mid_down['Gasoline Combustion Emissions Intensity (kg CO2eq. / BOE)']
@@ -184,23 +184,28 @@ OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
 OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)'] = \
     up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']
     
-OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Gasoline for Cars (kgCO2eq/boe)'] \
-    + OCI_info100['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'] \
-    + OCI_info100['Downstream: Petroleum Coke for Power (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Natural Gas Liquids (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] \
-    + OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']\
-    + OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)'] 
+OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Gasoline for Cars (kgCO2eq/boe)'] 
+    + OCI_info100['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'] 
+    + OCI_info100['Downstream: Petroleum Coke for Power (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Natural Gas Liquids (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] 
+    + OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)']) 
 
 OCI_info100['Total Emission Carbon Intensity (kgCO2eq/boe)']=OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']+\
 OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']+OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)']
 
-OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']=OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']+\
-    OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']+OCI_info100['Downstream: Transport to Consumers (kgCO2eq/boe)'] 
+OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']=(OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']
+    + OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
+    + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']) 
 
 OCI_info100['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info100['Total Emission Carbon Intensity (kgCO2eq/boe)'] \
     - OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']
@@ -247,6 +252,8 @@ OCI_infobase_agg.groupby(['Country','Aggregation']).apply(lambda gp:np.average(g
 OCI_infobase_agg.groupby(['Country','Aggregation']).apply(lambda gp:np.average(gp['Gas composition H2S'], weights = gp['2020 Total Oil and Gas Production Volume (boe)'])).rename('Gas composition H2S'),
 OCI_infobase_agg.groupby(['Country','Aggregation']).apply(lambda gp:np.average(gp['Gas composition CO2'], weights = gp['2020 Total Oil and Gas Production Volume (boe)'])).rename('Gas composition CO2'),
 OCI_infobase_agg.groupby(['Country','Aggregation']).apply(lambda gp:np.average(gp['Gas composition C1'], weights = gp['2020 Total Oil and Gas Production Volume (boe)'])).rename('Gas composition C1')],axis=1)
+
+
 
 # Post-aggregation field property value assignment
 ## Flare rate is defined in the following categorical way
@@ -300,6 +307,13 @@ def resource_type(x):
     else: 
         return 'Uncategorized'
     
+# Fix Canadian Oil Sands API and Sulfur values
+can = pd.read_excel(sp_dir+'/Webtool updates/Canadian Oil Fix.xlsx')
+
+cols = ['API Gravity','Sulfur Content Weight Percent']
+
+OCI_infobase_aggregated.loc[(OCI_infobase_aggregated['Country'].isin(can['Country']))&
+                           (OCI_infobase_aggregated['Aggregation'].isin(can['Field Name'])),cols]=can[cols].values
 
 OCI_infobase_aggregated['Resource Type']=OCI_infobase_aggregated.apply(lambda x: resource_type(x),axis =1)
 
@@ -322,25 +336,33 @@ OCI_infobase_aggregated.rename(columns = {'Aggregation':'Field Name','Depth (ft)
 
 OCI_infobase_aggregated = OCI_infobase_aggregated.round(2)
 
+
+def region_mod(x):
+    if x in(['Africa','South America','North America','Oceania','Asia']):
+        return x+'n'
+    elif x in(['Middle East','Caribbean','Former Soviet Union']):
+        return x
+    else:
+        return x
+
+OCI_infobase_aggregated['Region_m']=OCI_infobase_aggregated['Region'].apply(region_mod)
+
 OCI_infobase_aggregated['descriptor']= (
-        OCI_infobase_aggregated['Field Name']
-        + ' is an '
-        + OCI_infobase_aggregated['Location']
-        + ' '
-        + OCI_infobase_aggregated['Oil or Gas']
-        + ' field located in '
+        'The '
+        + OCI_infobase_aggregated['Field Name']
+        +' field is located in '
         + OCI_infobase_aggregated['Country']
-        + '. '
-        + 'It has an API graivty of '
-        + OCI_infobase_aggregated['API Gravity'].round(0).astype(str)
-        + ' and a sulfur content of '
-        + OCI_infobase_aggregated['Sulfur Content Weight Percent'].round(2).astype(str)
-        + ', characterizing it as a '
-        + OCI_infobase_aggregated['Resource Type']
-        + ' and a '
-        + OCI_infobase_aggregated['Sour or Sweet']
-        + '.')
-        
+        + '. This '
+        + OCI_infobase_aggregated['Region_m']
+        + ' region asset is classified as '
+        + OCI_infobase_aggregated['Resource Type'].apply(lambda x: x.lower())
+        + '. All produced liquids are processed in a '
+        + OCI_infobase_aggregated['Default Refinery Configuration'].apply(lambda x: x.lower())
+        + ' refinery assuming the following oil assay: '
+        + OCI_infobase_aggregated['Assay Name']
+        + '. Following are the detailed resource characteristics modeled in the OCI+.')
+
+OCI_infobase_aggregated.drop(columns = 'Region_m',inplace = True)
 
 OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Field Name']!='Amenamkpono') & (OCI_infobase_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_infobase_aggregated['Field Name']!='Brent')]
 
@@ -376,7 +398,9 @@ columns_to_be_averaged = ['Upstream: Exploration (kgCO2eq/boe)',
  'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)',
  'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)',
  'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)',
- 'Downstream: Transport to Consumers (kgCO2eq/boe)',
+ 'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)',
+ 'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)',
+ 'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)',
  'Downstream: Gasoline for Cars (kgCO2eq/boe)',
  'Downstream: Jet Fuel for Planes (kgCO2eq/boe)',
  'Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)',
