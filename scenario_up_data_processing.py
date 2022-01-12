@@ -4,7 +4,7 @@ import numpy as np
 # Get the directory of all csv files
 
 import os
-os.system("az storage blob download-batch --destination '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/csvs' --source csvs --sas-token '?sv=2020-08-04&ss=bfqt&srt=sco&sp=rl&se=2022-10-14T03:32:20Z&st=2021-10-13T19:32:20Z&spr=https&sig=WL8KGvOgEve5iluhVafKP0MMMkkBOPmluV3%2B8LGAFb8%3D' --account-name ocirmistorage")
+#os.system("az storage blob download-batch --destination '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/csvs' --source csvs --sas-token '?sv=2020-08-04&ss=bfqt&srt=sco&sp=rl&se=2022-10-14T03:32:20Z&st=2021-10-13T19:32:20Z&spr=https&sig=WL8KGvOgEve5iluhVafKP0MMMkkBOPmluV3%2B8LGAFb8%3D' --account-name ocirmistorage")
 
 opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
@@ -365,6 +365,8 @@ for filename in list_csv:
         list_flaring.append(filename)
 
 flaring_ch4 =[]
+flaring_ghg = []
+
 Field_name = []
 original_file = []
 Scenario = []
@@ -373,12 +375,13 @@ toggle_value = []
 for file in list_flaring:
     df = pd.read_csv(d+file,header=None)
     flaring_ch4.append(float(df.iloc[80,12]))
+    flaring_ghg.append(float(df.iloc[82,12]))
     Field_name.append(df.iloc[0,7].strip())
     Scenario.append(file.split('-')[0])
     toggle_value.append(file.split('-')[1])
     original_file.append(file.split('-')[2])
 
-flaring = pd.DataFrame({'flaring_ch4(t/d)':flaring_ch4,'Field_name':Field_name,'Scenario':Scenario,'toggle_value':toggle_value,'original_file':original_file})
+flaring = pd.DataFrame({'flaring_ch4(t/d)':flaring_ch4,'flaring_ghg(t/d)':flaring_ghg,'Field_name':Field_name,'Scenario':Scenario,'toggle_value':toggle_value,'original_file':original_file})
 
 # Extract co2 and methane emission from vff summary.csv files
 
@@ -505,7 +508,3 @@ upstream = upstream[upstream['Field_name']!='Amenamkpono'] #remove the nigeria f
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 upstream.to_sql('scenario_upstream_results',connection, if_exists='replace',index = False)
-
-
-
-
