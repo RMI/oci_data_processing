@@ -14,6 +14,8 @@ scenario['Field Name']=up_mid_down['Field_name']
 scenario['Country'] = up_mid_down['Field location (Country)']
 scenario['Scenario']=up_mid_down['Scenario']
 scenario['toggle_value']=up_mid_down['toggle_value']
+scenario['flaring_ghg(t/d)'] = up_mid_down['flaring_ghg(t/d)']
+scenario['Total BOED']=up_mid_down['Total BOE Produced']
 
 def upstream_gmj_kgboe_convert(x):
     return(up_mid_down[x]*up_mid_down['ES_MJperd']/up_mid_down['Total BOE Produced']/1000)
@@ -33,10 +35,37 @@ upstream_emission_category = {
 
 for i in upstream_emission_category:
     scenario[i] = upstream_gmj_kgboe_convert(upstream_emission_category[i])
+    
+
 
 scenario['Upstream Carbon Intensity (kgCO2eq/boe)']=sum([scenario[i] for i in upstream_emission_category])
 # Adjust the combustion ratio for Electrifying Scenario 
 scenario['Upstream Carbon Intensity (kgCO2eq/boe)'] = np.where((scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='On'), scenario['Upstream Carbon Intensity (kgCO2eq/boe)']*(1-up_mid_down['combustion_ratio']),scenario['Upstream Carbon Intensity (kgCO2eq/boe)'])
+
+
+
+# Calculate Flare volume scenario by editing the flaring related GHG. 0.5 and 1.5 multiplier from default scenario
+scenario_fv_def = scenario[(scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='Off')].copy(deep=True)
+
+
+scenario_fv_def['Scenario']='Flare Volume'
+
+scenario_fv_def['toggle_value']='1'
+
+scenario_fv_50 = scenario_fv_def.copy(deep=True)
+
+scenario_fv_50['toggle_value']='0.5'
+
+scenario_fv_50['Upstream Carbon Intensity (kgCO2eq/boe)']=scenario_fv_50['Upstream Carbon Intensity (kgCO2eq/boe)']-0.5*scenario_fv_50['flaring_ghg(t/d)']*1000/scenario_fv_50['Total BOED']
+
+scenario_fv_150 = scenario_fv_def.copy(deep=True)
+
+scenario_fv_150['toggle_value']='1.5'
+
+scenario_fv_150['Upstream Carbon Intensity (kgCO2eq/boe)']=scenario_fv_150['Upstream Carbon Intensity (kgCO2eq/boe)']+0.5*scenario_fv_150['flaring_ghg(t/d)']*1000/scenario_fv_150['Total BOED']
+
+scenario=pd.concat([scenario,scenario_fv_def,scenario_fv_50,scenario_fv_150])
+
 def midstream_scaler(x):
     return(up_mid_down[x]*up_mid_down['Oil production volume']/up_mid_down['Total BOE Produced'])
 
@@ -55,8 +84,10 @@ for i in midstream_emission_category_CO2:
 scenario['Midstream Carbon Intensity (kgCO2eq/boe)']=sum([scenario[i] for i in midstream_emission_category_CO2])
 
 # Downstream Transport to Consumer include refinery product transport and NGL transport
-scenario['Downstream: Transport to Consumers (kgCO2eq/boe)'] =up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE)']+\
-up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE).1'] 
+scenario['Downstream: Transport to Consumers (kgCO2eq/boe)'] =(up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE)']
+    + up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE).1'] 
+    + upstream_gmj_kgboe_convert('l-Total GHG emissions')
+    + upstream_gmj_kgboe_convert('g-Total GHG emissions'))
 
 scenario['Downstream: Gasoline for Cars (kgCO2eq/boe)']=\
     up_mid_down['Gasoline Combustion Emissions Intensity (kg CO2eq. / BOE)']
@@ -77,11 +108,8 @@ scenario['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] = \
 scenario['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
     up_mid_down['Total Process Emissions Intensity (kg CO2eq./boe total)']
 
-# Adding OPGEE LNG and Natural Gas distribution into OPEM's Natural Gas Combustion 
-scenario['Dwonstream: Natural Gas (kgCO2eq/boe)'] = \
-    up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']\
-    +upstream_gmj_kgboe_convert('l-Total GHG emissions')+upstream_gmj_kgboe_convert('g-Total GHG emissions')
-
+scenario['Downstream: Natural Gas (kgCO2eq/boe)'] = \
+    up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']
 scenario['Downstream Carbon Intensity (kgCO2eq/boe)'] = scenario['Downstream: Transport to Consumers (kgCO2eq/boe)']\
     + scenario['Downstream: Gasoline for Cars (kgCO2eq/boe)'] \
     + scenario['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']\
@@ -92,7 +120,7 @@ scenario['Downstream Carbon Intensity (kgCO2eq/boe)'] = scenario['Downstream: Tr
     + scenario['Downstream: Natural Gas Liquids (kgCO2eq/boe)']\
     + scenario['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] \
     + scenario['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']\
-    + scenario['Dwonstream: Natural Gas (kgCO2eq/boe)'] 
+    + scenario['Downstream: Natural Gas (kgCO2eq/boe)'] 
 
 scenario=scenario[['Field Name', 'Country', 'Scenario','toggle_value',
 'Upstream Carbon Intensity (kgCO2eq/boe)', 'Midstream Carbon Intensity (kgCO2eq/boe)','Downstream Carbon Intensity (kgCO2eq/boe)']]
@@ -148,7 +176,7 @@ uptoggles_m.rename(columns ={'new_slider':'slider','toggle_value':'value'},inpla
 
 # Add 2020 TS from the default results
 
-up_2020 = uptoggles_m[(uptoggles_m['slider']=='Electrify with Renewables')&(uptoggles_m['value']=='Off')]
+up_2020 = uptoggles_m[(uptoggles_m['slider']=='Renewable Eletricity')&(uptoggles_m['value']=='Off')].copy(deep=True)
 
 up_2020['slider']='Time Series'
 up_2020['value']='2020'
@@ -158,8 +186,6 @@ uptoggles_m=pd.concat([uptoggles_m,up_2020],axis=0)
 
 # Calculate GWP scenarios based on up_mid_down default values
 
-import sqlite3
-connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 up_mid_down = pd.read_sql('select * from up_mid_downstream_results',connection)
 # select only 2020 results for webtool
 up_mid_down = up_mid_down[up_mid_down['year']=='2020'].reset_index()
@@ -281,7 +307,6 @@ OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info100['Downstre
 
 OCI_info100['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total BOE Produced']*365
 
-# Start Aggregation 
 
 ## Aggregation to desired field/basin level
 agg_list = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/aggregation_list_CAfields.csv')
@@ -404,4 +429,3 @@ all_scenarios = pd.concat([uptoggles_m,midtoggles,downtoggles,GWPtoggles],axis =
 all_scenarios = all_scenarios[all_scenarios.columns[-3:].to_list()+all_scenarios.columns[:-3].to_list()]
 
 all_scenarios.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/slider.xlsx',index = False)
-
