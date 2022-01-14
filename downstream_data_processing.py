@@ -69,8 +69,8 @@ upstream_midstream_for_opem['volume_flow_bbl']=''
 upstream_midstream_for_opem['Product Slate (bbl product per day)'] = ''
 upstream_midstream_for_opem['energy_flow_MJ']=''
 upstream_midstream_for_opem['mass_flow_kg']=''
-upstream_midstream_for_opem['Liquefied Petroleum Gases (LPG)_bbl']= upstream_midstream_for_opem['Liquified Petroleum Gas (LPG).1']/270
-upstream_midstream_for_opem['Petrochemical Feedstocks_bbl']=upstream_midstream_for_opem['Petrochemical Feedstocks.1']/270
+upstream_midstream_for_opem['Liquefied Petroleum Gases (LPG)_bbl']= upstream_midstream_for_opem['Liquified Petroleum Gas (LPG).1']/(2.04*0.159*270)
+upstream_midstream_for_opem['Petrochemical Feedstocks_bbl']=upstream_midstream_for_opem['Petrochemical Feedstocks.1']/(1.264*0.159*270)
 upstream_midstream_for_opem['Asphalt_bbl']= 0
 
 upstream_midstream_for_opem['emission(kgCO2eq/bbl)']='kgCO2eq/bbl'
