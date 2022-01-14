@@ -377,11 +377,16 @@ for filename in list_csv:
         list_vff.append(filename)
 
 venting_ch4 =[]
+
 venting_ch4_miq = []
 venting_ch4_uponly = []
+
 fugitive_ch4 =[]
+
 fugitive_ch4_miq = []
 fugitive_ch4_uponly = []
+
+
 venting_co2 = []
 fugitive_co2 = []
 Field_name = []
@@ -392,11 +397,19 @@ for file in list_vff:
     fugitive_ch4.append(sum(df.iloc[111:157,10].apply(lambda x:float(x))))
     venting_co2.append(sum(df.iloc[111:157,7].apply(lambda x:float(x))))
     fugitive_co2.append(sum(df.iloc[111:157,8].apply(lambda x:float(x))))
-    venting_ch4_miq.append(sum(df.iloc[111:131,9].apply(lambda x:float(x)))+sum(df.iloc[147:157,9].apply(lambda x:float(x))))
-    fugitive_ch4_miq.append(sum(df.iloc[111:131,10].apply(lambda x:float(x)))+sum(df.iloc[147:157,10].apply(lambda x:float(x))))
-    fugitive_ch4_uponly.append(sum(df.iloc[111:136,10].apply(lambda x:float(x)))+sum(df.iloc[147:157,10].apply(lambda x:float(x))))
-    venting_ch4_uponly.append(sum(df.iloc[111:136,9].apply(lambda x:float(x)))+sum(df.iloc[147:157,9].apply(lambda x:float(x))))
-    
+    venting_production_ch4 = sum(df.iloc[111:131,9].apply(lambda x:float(x)))
+    venting_gatherboostprocesss_ch4 = sum(df.iloc[131:136,9].apply(lambda x:float(x)))
+    venting_transmissionstorage_ch4 = sum(df.iloc[136:141,9].apply(lambda x:float(x)))
+    venting_2ndproduction_ch4 = sum(df.iloc[147:157,9].apply(lambda x:float(x)))
+    fugitive_production_ch4 = sum(df.iloc[111:131,10].apply(lambda x:float(x)))
+    fugitive_gatherboostprocesss_ch4 = sum(df.iloc[131:136,10].apply(lambda x:float(x)))
+    fugitive_transmissionstorage_ch4 = sum(df.iloc[136:141,10].apply(lambda x:float(x)))
+    fugitive_2ndproduction_ch4 = sum(df.iloc[147:157,10].apply(lambda x:float(x)))
+    venting_ch4_miq.append(venting_production_ch4+venting_2ndproduction_ch4)
+    fugitive_ch4_miq.append(fugitive_production_ch4+fugitive_2ndproduction_ch4)
+
+    venting_ch4_uponly.append(venting_production_ch4+venting_gatherboostprocesss_ch4+venting_2ndproduction_ch4)
+    fugitive_ch4_uponly.append(fugitive_production_ch4+fugitive_gatherboostprocesss_ch4+fugitive_2ndproduction_ch4)
     Field_name.append(df.iloc[0,7].strip())
     original_file.append((file.split('-')[0]))
 
@@ -404,7 +417,11 @@ vff = pd.DataFrame({'Field_name':Field_name,'original_file':original_file,
                    'venting_ch4(t/d)':venting_ch4,'fugitive_ch4(t/d)':fugitive_ch4,
                    'venting_co2(t/d)':venting_co2,'fugitive_co2(t/d)':fugitive_co2,
                    'venting_ch4_miq(t/d)':venting_ch4_miq,'fugitive_ch4_miq(t/d)':fugitive_ch4_miq,
-                   'venting_ch4_uponly(t/d)':venting_ch4_uponly,'fugitive_ch4_uponly(t/d)':fugitive_ch4_uponly})
+                   'venting_ch4_uponly(t/d)':venting_ch4_uponly,'fugitive_ch4_uponly(t/d)':fugitive_ch4_uponly,
+                   'ch4_production(t/d)': venting_production_ch4+fugitive_production_ch4,
+                   'ch4_gatherboostprocess(t/d)': venting_gatherboostprocesss_ch4+fugitive_gatherboostprocesss_ch4,
+                   'ch4_transmissionstorage(t/d)': venting_transmissionstorage_ch4+fugitive_transmissionstorage_ch4,
+                   'ch4_2ndproduction(t/d)':venting_2ndproduction_ch4+fugitive_2ndproduction_ch4})
 
 # merge flaring and vff to calculate methane emission 
 ch4_co2 = vff.merge(flaring,how ='outer',indicator = True)
@@ -415,7 +432,6 @@ else:
 
 ch4_co2['tCH4/year'] = (ch4_co2['flaring_ch4(t/d)']+ch4_co2['venting_ch4(t/d)']+ch4_co2['fugitive_ch4(t/d)'])*365
 ch4_co2['tCH4/year-miQ']=(ch4_co2['flaring_ch4(t/d)']+ch4_co2['venting_ch4_miq(t/d)']+ch4_co2['fugitive_ch4_miq(t/d)'])*365
-
 
 # merge results, energy summary, flaring and vff 
 results_ES_ch4_co2 = results_ES.merge(ch4_co2,how='outer',indicator = True)
