@@ -5,9 +5,9 @@ from os.path import join
 sp_dir= '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 
 print('Extracting product slates and emission data from Liam batch run results...')
-onehundredyr_directory_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 535 Assays Results',
-                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI 107 Assays Results',
-                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM Assays Results']
+onehundredyr_directory_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 100y',
+                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI 100y',
+                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM 100y']
 
 onehundredyr_assay_file_list = dict()
 for directory in onehundredyr_directory_path:
