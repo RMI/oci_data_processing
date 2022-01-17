@@ -70,8 +70,13 @@ def opem_input_prep(upstream,midstream):
     upstream_midstream_for_opem['Product Slate (bbl product per day)'] = ''
     upstream_midstream_for_opem['energy_flow_MJ']=''
     upstream_midstream_for_opem['mass_flow_kg']=''
-    upstream_midstream_for_opem['Liquefied Petroleum Gases (LPG)_bbl']= upstream_midstream_for_opem['Liquified Petroleum Gas (LPG).1']/270
-    upstream_midstream_for_opem['Petrochemical Feedstocks_bbl']=upstream_midstream_for_opem['Petrochemical Feedstocks.1']/270
+
+    # LPG: Mass [kg]/((2.04 kg/m3 gas)*(0.159 m3/bbl gas)*(270 bbl gas/bbl liquid))
+    # where .159 is a constant to convert volume units, and mass is found on [Sheet1 row 39] of the prelim output
+    # Petrochem feedstock: Mass [kg]/((1.264 kg/m3 gas)*(0.159 m3/bbl gas)*(270 bbl gas/bbl liquid))
+    # where .159 is a constant to convert volume units, and mass is found on [Sheet1 row 40] of the prelim output
+    upstream_midstream_for_opem['Liquefied Petroleum Gases (LPG)_bbl']= upstream_midstream_for_opem['Liquified Petroleum Gas (LPG).1']/(2.04*0.159*270)
+    upstream_midstream_for_opem['Petrochemical Feedstocks_bbl']=upstream_midstream_for_opem['Petrochemical Feedstocks.1']/(1.264*0.159*270)
     upstream_midstream_for_opem['Asphalt_bbl']= 0
 
     upstream_midstream_for_opem['emission(kgCO2eq/bbl)']='kgCO2eq/bbl'
