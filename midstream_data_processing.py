@@ -5,12 +5,19 @@ from os.path import join
 sp_dir= '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 
 print('Extracting product slates and emission data from Liam batch run results...')
-onehundredyr_directory_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 100y',
+onehundredyr_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 100y',
                               sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI 100y',
                               sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM 100y']
 
+# Remove files that are wrongly in the 100yr Haverly folder, based on the file name in new 20 yr haverly folder
+# This is a one time fix and should only be run once 
+for filename in os.listdir(onehundredyr_path[0]):
+    if filename not in os.listdir(sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/New Results/Haverly 20y'):
+        print(filename)
+        os.remove(onehundredyr_path[0]+'/'+filename)
+
 onehundredyr_assay_file_list = dict()
-for directory in onehundredyr_directory_path:
+for directory in onehundredyr_path:
     folder = directory.split('/')[-1].split(' ')[0].split(' ')[0].lower()
     onehundredyr_assay_file_list[folder] = []
     
@@ -100,22 +107,22 @@ final_assay_library['assay_name'] = final_assay_library['assay_name'].apply(lamb
 
 
 
-# Use the twenty year file names to get correct assay names. Reason: 100 year file name is not clean. 
-twentyyr_directory_path = {'haverly': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Haverly 20y',
-                          'oci': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/OCI 20y',
-                          'prelim': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/PRELIM 20y'}                              
+# Use the old twenty year file names to get correct assay names. Reason: 100 year file name is not clean. 
+twentyyr_path = {'haverly': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/Haverly 20y',
+                          'oci': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/OCI 20y',
+                          'prelim': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/PRELIM 20y'}                              
 
 def assay_name_20yr(assay_group,assay_id):
     '''return assay_name_20yr in the 20 year direcotry based on file names. 
     The assay_name_20yr will be used as one of the keys to match with sulphate and gravity data table'''
     
-    for filename in os.listdir(twentyyr_directory_path[assay_group]):
+    for filename in os.listdir(twentyyr_path[assay_group]):
         if filename.split('_')[0]==assay_id:
             assay_name = '_'.join(filename.split('_')[1:])[:-5]
             return assay_name.strip()
 
 final_assay_library['assay_name']=final_assay_library.apply(lambda x: assay_name_20yr(x['assay_group'],x['assay_id']),axis=1)
-final_assay_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_library.xlsx',index = False)
+#final_assay_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_library.xlsx',index = False)
 
 # Get throughput and sulfur content values from the three assay files and merge into the assay library
 
@@ -154,7 +161,7 @@ assay_bbl_sulfur_library.drop(columns = 'index',inplace = True)
 assay_bbl_sulfur_library = assay_bbl_sulfur_library.groupby(['assay_group','assay_name']).first()
 
 assay_bbl_sulfur_library.reset_index(inplace = True)
-assay_bbl_sulfur_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_bbl_sulfur_library.xlsx',index = False)
+#assay_bbl_sulfur_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_bbl_sulfur_library.xlsx',index = False)
 
 final_assay_library_merged = final_assay_library.merge(assay_bbl_sulfur_library,how = 'left',indicator = True)
 
@@ -189,11 +196,11 @@ field_assay['assay_id'] = field_assay['assay_id'].apply(lambda x: str(int(x)))
 merged_df = field_assay.merge(final_assay_library_merged,left_on=['assay_id','assay_category'],right_on=['assay_id','assay_group'],how = 'left')
 
 
-merged_df.to_excel(sp_dir +'/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.xlsx',index = False)
+merged_df.to_csv(sp_dir +'/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.csv',index = False)
 
 # Reload the file from Excel to automatically naming 
 # the columns with numbers to avoid duplicated column names
-merged_df = pd.read_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.xlsx')
+merged_df = pd.read_csv(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.csv')
 
 numerical_columns = [
  'Gasoline',
@@ -318,7 +325,7 @@ field_slate_emission['matched_assay']=np.where(field_slate_emission['normalized_
 field_slate_emission.drop(columns ='correct_assay_name',inplace = True)
 field_slate_emission['GWP']='100yr'
 
-field_slate_emission.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx',index = False)
+#field_slate_emission.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx',index = False)
 
 print('Updating midstream results in OCI database...')
 
