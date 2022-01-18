@@ -14,9 +14,10 @@ list_csv =[]
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
     if filename.endswith('.csv') and not filename.startswith('2'): 
+        # Remove legacy files that start with Vent-fug (naming error that causes bug in parsing filename)
         if filename.startswith('Vent-fug'): 
-            os.rename(d+filename, d+'Vent_fug'+filename[8:])
-            list_csv.append('Vent_fug'+filename[8:])
+            os.remove(d+filename)
+
         if filename.startswith('TS'):
             if 'Eagle Ford - condensate' in filename: #fix Eagle Ford -condensate error 
                 continue 
