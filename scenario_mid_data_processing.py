@@ -113,15 +113,15 @@ final_assay_library.rename(columns={'level_0':'assay_group',0:'assay_name'},inpl
 final_assay_library['assay_name'] = final_assay_library['assay_name'].apply(lambda x: x.strip())
 
 # Use the twenty year file names to get correct assay names. Reason: 100 year file name is not clean. 
-twentyyr_directory_path = {'haverly': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Haverly 20y',
-                          'oci': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/OCI 20y',
-                          'prelim': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/PRELIM 20y'}                              
+twentyyr_path = {'haverly': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/Haverly 20y',
+                          'oci': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/OCI 20y',
+                          'prelim': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/PRELIM 20y'}                              
 
 def assay_name_20yr(assay_group,assay_id):
     '''return assay_name_20yr in the 20 year direcotry based on file names. 
     The assay_name_20yr will be used as one of the keys to match with sulphate and gravity data table'''
     
-    for filename in os.listdir(twentyyr_directory_path[assay_group]):
+    for filename in os.listdir(twentyyr_path[assay_group]):
         if filename.split('_')[0]==assay_id:
             assay_name = '_'.join(filename.split('_')[1:])[:-5]
             return assay_name.strip()
