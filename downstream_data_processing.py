@@ -9,7 +9,7 @@ print('Merging upstream and midstream results...')
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 
-upstream = pd.read_sql('select * from upstream_results',connection)
+upstream = pd.read_sql('select * from upstream_results where year =2020',connection)
 midstream = pd.read_sql('select * from midstream_results',connection)
 
 # Calculate Crude to Refinery in bbl/d from Energy Summary tab of OPGEE model. Formula is based on cell G6 in OPEM input tab  
