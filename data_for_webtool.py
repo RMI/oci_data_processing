@@ -5,7 +5,7 @@ import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 up_mid_down = pd.read_sql('select * from up_mid_downstream_results',connection)
 # select only 2020 results for webtool
-up_mid_down = up_mid_down[up_mid_down['year']=='2020'].reset_index()
+#up_mid_down = up_mid_down[up_mid_down['year']=='2020'].reset_index()
 
 OCI_infobase=pd.DataFrame()
 
@@ -69,7 +69,7 @@ OCI_infobase['Midstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total refin
 # Downstream mehtane accounts for all OPEM methane output + upstream natural gas distribution /LNG
 OCI_infobase['Downstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total Transport CH4 Emissions Intensity (kg CH4. / BOE)']+\
 up_mid_down['Total Transport CH4 Emissions Intensity (kg CH4. / BOE).1']+up_mid_down['Total Combustion CH4 Emissions Intensity (kg CH4. / BOE)']+\
-up_mid_down['Total Combustion CH4 Emissions Intensity (kg CH4. / BOE)']+\
+up_mid_down['Total Combustion CH4 Emissions Intensity (kg CH4. / BOE).1']+\
 up_mid_down['Total ProcessCH4  Emissions Intensity (kg CH4/boe total)']+ up_mid_down['tCH4/year']/\
 (OCI_infobase['2020 Total Oil and Gas Production Volume (boe)'])*1000-OCI_infobase['Upstream Methane Intensity (kgCH4/boe)']
 
