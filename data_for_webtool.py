@@ -364,7 +364,7 @@ OCI_infobase_aggregated['descriptor']= (
 
 OCI_infobase_aggregated.drop(columns = 'Region_m',inplace = True)
 
-OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Field Name']!='Amenamkpono') & (OCI_infobase_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_infobase_aggregated['Field Name']!='Brent')]
+#OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Field Name']!='Amenamkpono') & (OCI_infobase_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_infobase_aggregated['Field Name']!='Brent')]
 
 OCI_infobase_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/infobase.csv',index = False)
 
@@ -398,9 +398,6 @@ columns_to_be_averaged = ['Upstream: Exploration (kgCO2eq/boe)',
  'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)',
  'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)',
  'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)',
- 'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)',
- 'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)',
- 'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)',
  'Downstream: Gasoline for Cars (kgCO2eq/boe)',
  'Downstream: Jet Fuel for Planes (kgCO2eq/boe)',
  'Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)',
@@ -427,7 +424,7 @@ OCI_info100_aggregated.rename(columns = {'Aggregation':'Field Name'},inplace = T
 
 OCI_info100_aggregated = OCI_info100_aggregated.round(2)
 
-OCI_info100_aggregated = OCI_info100_aggregated[(OCI_info100_aggregated['Field Name']!='Amenamkpono') & (OCI_info100_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info100_aggregated['Field Name']!='Brent')]
+#OCI_info100_aggregated = OCI_info100_aggregated[(OCI_info100_aggregated['Field Name']!='Amenamkpono') & (OCI_info100_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info100_aggregated['Field Name']!='Brent')]
 
 OCI_info100_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/info100.csv',index = False)
 
@@ -450,5 +447,5 @@ OCI_info20_aggregated.rename(columns = {'Aggregation':'Field Name'},inplace = Tr
 
 OCI_info20_aggregated = OCI_info20_aggregated.round(2)
 
-OCI_info20_aggregated = OCI_info20_aggregated[(OCI_info20_aggregated['Field Name']!='Amenamkpono') & (OCI_info20_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info20_aggregated['Field Name']!='Brent')]
+#OCI_info20_aggregated = OCI_info20_aggregated[(OCI_info20_aggregated['Field Name']!='Amenamkpono') & (OCI_info20_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info20_aggregated['Field Name']!='Brent')]
 OCI_info20_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/info20.csv',index = False)
