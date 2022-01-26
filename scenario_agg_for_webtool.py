@@ -1,51 +1,3 @@
-import pandas as pd
-import sqlite3
-import numpy as np 
-
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
-up_mid_down = pd.read_sql('select * from scenario_up_mid_down',connection)
-
-# Aggregation for webtool 
-agg_list = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/aggregation_list_CAfields.csv')
-scenario = pd.DataFrame()
-
-scenario['Field Name']=up_mid_down['Field_name']
-scenario['Country'] = up_mid_down['Field location (Country)']
-scenario['Scenario']=up_mid_down['Scenario']
-scenario['toggle_value']=up_mid_down['toggle_value'].apply(lambda x: x.replace(':','').replace(' & ','_').lower())
-scenario['toggle_stage']=up_mid_down['toggle_stage']
-scenario['flaring_ghg(t/d)'] = up_mid_down['flaring_ghg(t/d)']
-scenario['Total BOED']=up_mid_down['Total BOE Produced']
-
-def upstream_gmj_kgboe_convert(x):
-    return(up_mid_down[x]*up_mid_down['ES_MJperd']/up_mid_down['Total BOE Produced']/1000)
-
-upstream_emission_category = {
-    'Upstream: Exploration (kgCO2eq/boe)':'e-Total GHG emissions',
-    'Upstream: Drilling & Development (kgCO2eq/boe)':'d-Total GHG emissions',
-    'Upstream: Crude Production & Extraction (kgCO2eq/boe)':'p-Total GHG emissions',
-    'Upstream: Surface Processing (kgCO2eq/boe)':'s-Total GHG emissions',
-    'Upstream: Maintenance (kgCO2eq/boe)':'m-Total GHG emissions',
-    'Upstream: Waste Disposal (kgCO2eq/boe)':'w-Total GHG emissions',
-    'Upstream: Crude Transport (kgCO2eq/boe)':'t-Total GHG emissions',
-    'Upstream: Other Small Sources (kgCO2eq/boe)':'Other small sources',
-    'Upstream: Offsite emissions credit/debit (kgCO2eq/boe)':'Offsite emissions credit/debit',
-    'Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)':'CSS-Total CO2 sequestered'
-}
-
-for i in upstream_emission_category:
-    scenario[i] = upstream_gmj_kgboe_convert(upstream_emission_category[i])
-    
-
-scenario['Upstream Carbon Intensity (kgCO2eq/boe)']=sum([scenario[i] for i in upstream_emission_category])
-# Adjust the combustion ratio for Electrifying Scenario 
-
-
-scenario['Upstream Carbon Intensity (kgCO2eq/boe)'] = np.where((scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='On'), scenario['Upstream Carbon Intensity (kgCO2eq/boe)']*(1-up_mid_down['combustion_ratio']),scenario['Upstream Carbon Intensity (kgCO2eq/boe)'])
-
-
-
 # Calculate Flare volume scenario by editing the flaring related GHG. 0.5 and 1.5 multiplier from default scenario
 scenario_fv_def = scenario[(scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='Off')].copy(deep=True)
 
@@ -259,6 +211,57 @@ midtoggles['toggle_stage']='Midstream'
 
 # Continue to fix GWP 100,5,10 based on the methane concentration
 
+
+
 all_scenarios = pd.concat([toggles,midtoggles])
+
 all_scenarios = all_scenarios[all_scenarios.columns[-3:].to_list()+all_scenarios.columns[:-3].to_list()]
-all_scenarios.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/slider_6.xlsx',index = False)
+
+# Start scaling for different Global Warming Potentials
+
+GWP_20 = all_scenarios[(all_scenarios['slider']=='Renewable Electricity')&(all_scenarios['value']=='Off')].copy(deep=True)
+
+
+CI_20yr = pd.concat([GWP_20.iloc[:,3],GWP_20.iloc[:,5:]],axis =1)
+
+CI_20yr = CI_20yr.melt(id_vars='stage').rename(columns = {'variable':'Field Name','value':'GWP-20'})
+
+
+MI = pd.read_csv(sp_dir + '/Webtool updates/basedata/infobase.csv')
+
+MI = MI[['Field Name','Upstream Methane Intensity (kgCH4/boe)',
+       'Midstream Methane Intensity (kgCH4/boe)',
+       'Downstream Methane Intensity (kgCH4/boe)']]
+
+MI = MI.rename(columns = {'Upstream Methane Intensity (kgCH4/boe)': 'upstream',
+                     'Midstream Methane Intensity (kgCH4/boe)': 'midstream',
+                    'Downstream Methane Intensity (kgCH4/boe)':'downstream'}).melt(id_vars='Field Name').rename(columns ={'variable':'stage','value':'MI'})
+
+
+
+CI_MI = CI_20yr.merge(MI,how = 'left', indicator = True)
+
+CI_MI[CI_MI['_merge']!='both']
+
+CI_MI['GWP-100'] = CI_MI['GWP-20']-CI_MI['MI']*55
+
+CI_MI['GWP-5']= CI_MI['GWP-20']+CI_MI['MI']*(120-85)
+
+CI_MI['GWP-10']= CI_MI['GWP-20']+CI_MI['MI']*(100-85)
+
+CI_MI = CI_MI.drop(columns = ['_merge','MI']).melt(id_vars=['stage','Field Name']).pivot(index=['stage','variable'],columns='Field Name',values='value').reset_index()
+
+
+CI_MI.rename(columns ={'variable':'value'},inplace = True)
+
+CI_MI['Default?']=CI_MI['value'].apply(lambda x: 'Y' if x=='GWP-20' else 'N')
+
+CI_MI['slider']='Global Warming Potential'
+
+
+
+CI_MI['toggle_stage']='Global Warming Potential'
+
+all_scenarios_GWP=pd.concat([all_scenarios,CI_MI],axis=0)
+
+all_scenarios_GWP.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/slider_10.xlsx',index = False)
