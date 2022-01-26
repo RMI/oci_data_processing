@@ -515,6 +515,7 @@ flowsheet = pd.DataFrame({'Field_name':Field_name,'original_file':original_file,
 results_ES_ch4_co2_fs =results_ES_ch4_co2.merge(flowsheet,how='outer',indicator = True)
 if results_ES_ch4_co2_fs[results_ES_ch4_co2_fs['_merge']!='both'].shape[0]>0:
     print('Unmatched Field: results_ES_ch4_co2 // flowsheet. Check the merge')
+    print(results_ES_ch4_co2_fs[results_ES_ch4_co2_fs['_merge']=='left only'])
 else:
     results_ES_ch4_co2_fs.drop(columns = '_merge',inplace = True)
 
