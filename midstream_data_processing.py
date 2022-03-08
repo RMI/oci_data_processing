@@ -136,14 +136,17 @@ for assay in assay_files:
     assay_name = []
     assay_throughput =[]
     assay_sulfur = []
+    assay_gravity = []
     df = pd.DataFrame()
     for i in range(assay_files[assay][1]):
         assay_name.append(assay_df.iloc[i*15,0].strip())
         assay_throughput.append(float(assay_df.iloc[3+i*15,2]))
-        assay_sulfur.append(float(assay_df.iloc[6+i*15,2]))  
+        assay_sulfur.append(float(assay_df.iloc[6+i*15,2]))
+        assay_gravity.append(float(assay_df.iloc[8+i*15,2]))
     df['assay_name']=assay_name
     df['throughput']=assay_throughput
     df['sulfur']=assay_sulfur
+    df['gravity']=assay_gravity
     assay_bbl_sulfur[assay]=df
     
 
@@ -297,7 +300,8 @@ numerical_columns = [
  'emission_frac_CH4',
  'emission_frac_N2O',
 'throughput',
-'sulfur']
+'sulfur',
+'gravity']
 
 # calculate product slates and emissions for composite assays
 merged_df[numerical_columns] = merged_df[numerical_columns].multiply(merged_df['normalized_ratio'], axis="index")

@@ -13,9 +13,9 @@ OCI_infobase['Field Name']=up_mid_down['Field_name']
 
 OCI_infobase['Country']=up_mid_down['Field location (Country)']
 
-OCI_infobase['Assay Name']=up_mid_down['matched_assay']
+OCI_infobase['Assay Name']=up_mid_down['Assay']
 
-OCI_infobase['API Gravity']=up_mid_down['API gravity']
+OCI_infobase['API Gravity']=up_mid_down['API gravity_x']
 
 OCI_infobase['Sulfur Content (wt%)']=up_mid_down['sulfur']
 OCI_infobase['Gas composition H2S']=up_mid_down['Gas composition H2S']
@@ -334,7 +334,7 @@ OCI_infobase_aggregated['Sour or Sweet'] = OCI_infobase_aggregated.apply(lambda 
 
 OCI_infobase_aggregated.rename(columns = {'Aggregation':'Field Name','Depth (ft)':'Max Depth(ft)'}, inplace = True)
 
-OCI_infobase_aggregated = OCI_infobase_aggregated.round(2)
+#OCI_infobase_aggregated = OCI_infobase_aggregated.round(2)
 
 
 def region_mod(x):

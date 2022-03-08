@@ -9,7 +9,7 @@ print('Merging upstream and midstream results...')
 import sqlite3
 connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 
-upstream = pd.read_sql('select * from upstream_results where year =2020',connection)
+upstream = pd.read_sql('select * from upstream_results',connection)
 midstream = pd.read_sql('select * from midstream_results',connection)
 
 # Calculate Crude to Refinery in bbl/d from Energy Summary tab of OPGEE model. Formula is based on cell G6 in OPEM input tab  
@@ -51,8 +51,8 @@ upstream['NGL_C5(boed)'] = (upstream['ES_NGL_output(mmbtu/d)']-(((upstream['FS_L
 upstream['petcoke(kg/d)'] = 1000*(upstream['FS_Petcoke_to_stock(t/d)']-upstream['ES_Petcoke_fuel(mmbtu/d)']/upstream['ES_Energy_Density_petcoke(mmbtu/t)'])
 
 upstream_midstream = upstream.merge(midstream,right_on=
-        ['opgee_field','opgee_country'],left_on = 
-        ['Field_name', 'Field location (Country)'], how = 'left')
+        ['opgee_field','opgee_country','original_file'],left_on = 
+        ['Field_name', 'Field location (Country)','original_file'], how = 'left')
 
 #upstream_midstream[upstream_midstream['sulfur'].isna()][['Field name','year']]
 
