@@ -3,23 +3,21 @@ import numpy as np
 import os
 
 # Load all csvs files into csvs folder
-os.system("az storage blob download-batch --destination '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/csvs' --source csvs --sas-token '?sv=2020-08-04&ss=bfqt&srt=sco&sp=rl&se=2022-10-14T03:32:20Z&st=2021-10-13T19:32:20Z&spr=https&sig=WL8KGvOgEve5iluhVafKP0MMMkkBOPmluV3%2B8LGAFb8%3D' --account-name ocirmistorage")
+#os.system("az storage blob download-batch --destination '../Upstream/csvs' --source csvs --sas-token '?sv=2020-08-04&ss=bfqt&srt=sco&sp=rl&se=2022-10-14T03:32:20Z&st=2021-10-13T19:32:20Z&spr=https&sig=WL8KGvOgEve5iluhVafKP0MMMkkBOPmluV3%2B8LGAFb8%3D' --account-name ocirmistorage")
 
 # Extracting Data from csvs folder 
 # Get the directory of all csv files
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-d = sp_dir + '/Upstream/csvs/'
-directory = os.fsencode(sp_dir + '/Upstream/csvs')
+d = '../Upstream/csvs/'
+directory = os.fsencode('../Upstream/csvs')
 list_csv =[]
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
-    if filename.endswith('.csv') and filename.startswith('2'): 
+    if filename.endswith('.csv') and filename.startswith('2') and 'Gas_nofrack_nolng.xlsm-Gannet A' not in filename: 
         #print(filename)
         list_csv.append(filename)
         continue
     else:
         continue
-
 
 print('Extract data needed from all results.csv files...')
 
@@ -135,38 +133,21 @@ def clean_df(df,column_names):
 
 list_df =[]
 for file in list_results:
-    df = pd.read_csv(d+file,header = None)  
-    result = clean_df(df,column_names)
-    result['original_file']=file.split('-')[0]
-    result['year']=file.split('-')[0][:-5].split('_')[0]
-    result['field_type']=file.split('-')[0][:-5].split('_')[1].lower()
-    result['frack?']= True if file.split('-')[0][:-5].split('_')[2].lower()=='frack' else False
-    result['lng?']= True if file.split('-')[0][:-5].split('_')[3].lower()=='lng' else False
-    list_df.append(result)
+    try:
+        df = pd.read_csv(d+file,header = None)  
+        result = clean_df(df,column_names)
+        result['original_file']=file.split('-')[0]
+        result['year']=file.split('-')[0][:-5].split('_')[0]
+        result['field_type']=file.split('-')[0][:-5].split('_')[1].lower()
+        result['frack?']= True if file.split('-')[0][:-5].split('_')[2].lower()=='frack' else False
+        result['lng?']= True if file.split('-')[0][:-5].split('_')[3].lower()=='lng' else False
+        result['Field_name'] = ('-'.join(file.split('-')[1:-1])).strip()
+        list_df.append(result)
+    except:
+        print("problematic files" + d+file)
 
 results_df = pd.concat(list_df)
 
-
-#### skip, skip, skip, Error check code; we are moving forward to use the field that says error because the emission differences are small
-
-# df = pd.concat(list_df)
-# # convert all numerical values to floats; keep categorical values as strings
-# df[['Oil production volume','Gas-to-oil ratio (GOR)','Lifecycle GHG emissions'
-#  ]] = df[['Oil production volume','Gas-to-oil ratio (GOR)','Lifecycle GHG emissions'
-#  ]].applymap(lambda x: float(x))
-# df['annual production(boe/yr)']=df['Oil production volume']*(1+df['Gas-to-oil ratio (GOR)']/5800)*365
-
-# #df[df['Field-by-field check']=='ERROR'][['Field location (Country)','Field name','annual production(boe/yr)']].sort_values(by='annual production(boe/yr)',ascending = False)
-
-# df_error = df.groupby(['Field-by-field check','Field location (Country)'])['annual production(boe/yr)'].sum().unstack(level=0)
-
-# df_error.head()
-
-# df_error['error_ok_ratio']=df_error['ERROR']/df_error['OK']
-
-# df_error['error_ok_ratio'].sort_values(ascending = False)
-
-# df.groupby('Field location (Country)').sum()
 
 # Converting all numerical columns into float type
 
@@ -327,8 +308,8 @@ for file in list_energy_summary:
         
     ES_NGL_output.append(float(df.iloc[86,4]))
     ES_Petcoke_fuel.append(float(df.iloc[76,4]))
-    
-    Field_name.append(df.iloc[0,7].strip())
+    Field_name.append(('-'.join(file.split('-')[1:-1])).strip())
+    #Field_name.append(df.iloc[0,7].strip())
     original_file.append(file.split('-')[0])
 
 energy_summary = pd.DataFrame({'Field_name':Field_name,'original_file':original_file,
@@ -344,8 +325,12 @@ results_ES = results_df.merge(energy_summary,how='outer',indicator = True)
 
 if results_ES[results_ES['_merge']!='both'].shape[0]>0:
     print('Unmatched Field: Results // Energy Summary. Check the merge')
+    print(results_ES[results_ES['_merge']!='both'])
+    results_ES.drop(columns = '_merge',inplace = True)
 else:
     results_ES.drop(columns = '_merge',inplace = True)
+
+
 
 results_ES['tCO2e/yr']=results_ES['Lifecycle GHG emissions']*\
     results_ES['ES_MJperd']/10**6*365
@@ -364,7 +349,7 @@ original_file = []
 for file in list_flaring:
     df = pd.read_csv(d+file,header=None)
     flaring_ch4.append(float(df.iloc[80,12]))
-    Field_name.append(df.iloc[0,7].strip())
+    Field_name.append(('-'.join(file.split('-')[1:-1])).strip())
     original_file.append((file.split('-')[0]))
 
 flaring = pd.DataFrame({'flaring_ch4(t/d)':flaring_ch4,'Field_name':Field_name,'original_file':original_file})
@@ -385,6 +370,15 @@ fugitive_ch4 =[]
 
 fugitive_ch4_miq = []
 fugitive_ch4_uponly = []
+venting_production_ch4 = []
+venting_gatherboostprocesss_ch4 = []
+venting_transmissionstorage_ch4 = []
+venting_2ndproduction_ch4 = []
+fugitive_production_ch4 = []
+fugitive_gatherboostprocesss_ch4 = []
+fugitive_transmissionstorage_ch4 =[]
+fugitive_2ndproduction_ch4 = []
+
 
 
 venting_co2 = []
@@ -397,47 +391,65 @@ for file in list_vff:
     fugitive_ch4.append(sum(df.iloc[111:157,10].apply(lambda x:float(x))))
     venting_co2.append(sum(df.iloc[111:157,7].apply(lambda x:float(x))))
     fugitive_co2.append(sum(df.iloc[111:157,8].apply(lambda x:float(x))))
-    venting_production_ch4 = sum(df.iloc[111:131,9].apply(lambda x:float(x)))
-    venting_gatherboostprocesss_ch4 = sum(df.iloc[131:136,9].apply(lambda x:float(x)))
-    venting_transmissionstorage_ch4 = sum(df.iloc[136:141,9].apply(lambda x:float(x)))
-    venting_2ndproduction_ch4 = sum(df.iloc[147:157,9].apply(lambda x:float(x)))
-    fugitive_production_ch4 = sum(df.iloc[111:131,10].apply(lambda x:float(x)))
-    fugitive_gatherboostprocesss_ch4 = sum(df.iloc[131:136,10].apply(lambda x:float(x)))
-    fugitive_transmissionstorage_ch4 = sum(df.iloc[136:141,10].apply(lambda x:float(x)))
-    fugitive_2ndproduction_ch4 = sum(df.iloc[147:157,10].apply(lambda x:float(x)))
-    venting_ch4_miq.append(venting_production_ch4+venting_2ndproduction_ch4)
-    fugitive_ch4_miq.append(fugitive_production_ch4+fugitive_2ndproduction_ch4)
+    
+    venting_production_ch4.append(sum(df.iloc[111:131,9].apply(lambda x:float(x))))
+    venting_gatherboostprocesss_ch4.append(sum(df.iloc[131:136,9].apply(lambda x:float(x))))
+    venting_transmissionstorage_ch4.append(sum(df.iloc[136:141,9].apply(lambda x:float(x))))
+    venting_2ndproduction_ch4.append(sum(df.iloc[147:157,9].apply(lambda x:float(x))))
+    
+    fugitive_production_ch4.append(sum(df.iloc[111:131,10].apply(lambda x:float(x))))
+    fugitive_gatherboostprocesss_ch4.append(sum(df.iloc[131:136,10].apply(lambda x:float(x))))
+    fugitive_transmissionstorage_ch4.append(sum(df.iloc[136:141,10].apply(lambda x:float(x))))
+    fugitive_2ndproduction_ch4.append(sum(df.iloc[147:157,10].apply(lambda x:float(x))))
+    
+    venting_ch4_miq= [sum(x) for x in zip(venting_production_ch4, venting_2ndproduction_ch4)]
+    fugitive_ch4_miq= [sum(x) for x in zip(fugitive_production_ch4, fugitive_2ndproduction_ch4)]
 
-    venting_ch4_uponly.append(venting_production_ch4+venting_gatherboostprocesss_ch4+venting_2ndproduction_ch4)
-    fugitive_ch4_uponly.append(fugitive_production_ch4+fugitive_gatherboostprocesss_ch4+fugitive_2ndproduction_ch4)
-    Field_name.append(df.iloc[0,7].strip())
+    venting_ch4_uponly = [sum(x) for x in zip(venting_production_ch4,venting_gatherboostprocesss_ch4,venting_2ndproduction_ch4)]
+    fugitive_ch4_uponly = [sum(x) for x in zip(fugitive_production_ch4,fugitive_gatherboostprocesss_ch4,fugitive_2ndproduction_ch4)]
+    Field_name.append(('-'.join(file.split('-')[1:-1])).strip())
+    #Field_name.append(df.iloc[0,7].strip())
     original_file.append((file.split('-')[0]))
+
+
+
 
 vff = pd.DataFrame({'Field_name':Field_name,'original_file':original_file,
                    'venting_ch4(t/d)':venting_ch4,'fugitive_ch4(t/d)':fugitive_ch4,
                    'venting_co2(t/d)':venting_co2,'fugitive_co2(t/d)':fugitive_co2,
                    'venting_ch4_miq(t/d)':venting_ch4_miq,'fugitive_ch4_miq(t/d)':fugitive_ch4_miq,
                    'venting_ch4_uponly(t/d)':venting_ch4_uponly,'fugitive_ch4_uponly(t/d)':fugitive_ch4_uponly,
-                   'ch4_production(t/d)': venting_production_ch4+fugitive_production_ch4,
-                   'ch4_gatherboostprocess(t/d)': venting_gatherboostprocesss_ch4+fugitive_gatherboostprocesss_ch4,
-                   'ch4_transmissionstorage(t/d)': venting_transmissionstorage_ch4+fugitive_transmissionstorage_ch4,
-                   'ch4_2ndproduction(t/d)':venting_2ndproduction_ch4+fugitive_2ndproduction_ch4})
+                   'ch4_production(t/d)': [sum(x) for x in zip(venting_production_ch4,fugitive_production_ch4)],
+                   'ch4_gatherboostprocess(t/d)': [sum(x) for x in zip(venting_gatherboostprocesss_ch4,fugitive_gatherboostprocesss_ch4)],
+                   'ch4_transmissionstorage(t/d)': [sum(x) for x in zip(venting_transmissionstorage_ch4,fugitive_transmissionstorage_ch4)],
+                   'ch4_2ndproduction(t/d)':[sum(x) for x in zip(venting_2ndproduction_ch4,fugitive_2ndproduction_ch4)]})
+
 
 # merge flaring and vff to calculate methane emission 
 ch4_co2 = vff.merge(flaring,how ='outer',indicator = True)
+
+
 if ch4_co2[ch4_co2['_merge']!='both'].shape[0]>0:
     print('Unmatched Field: vff // flaring. Check the merge')
+    print(ch4_co2[ch4_co2['_merge']!='both'])
+    ch4_co2.drop(columns = '_merge',inplace = True)
 else:
     ch4_co2.drop(columns = '_merge',inplace = True)
 
 ch4_co2['tCH4/year'] = (ch4_co2['flaring_ch4(t/d)']+ch4_co2['venting_ch4(t/d)']+ch4_co2['fugitive_ch4(t/d)'])*365
 ch4_co2['tCH4/year-miQ']=(ch4_co2['flaring_ch4(t/d)']+ch4_co2['venting_ch4_miq(t/d)']+ch4_co2['fugitive_ch4_miq(t/d)'])*365
 
+
+
+
 # merge results, energy summary, flaring and vff 
 results_ES_ch4_co2 = results_ES.merge(ch4_co2,how='outer',indicator = True)
 
+
 if results_ES_ch4_co2[results_ES_ch4_co2['_merge']!='both'].shape[0]>0:
     print('Unmatched Field: results_ES // ch4_co2. Check the merge')
+    print(results_ES_ch4_co2[results_ES_ch4_co2['_merge']!='both'])
+    results_ES_ch4_co2.drop(columns = '_merge',inplace = True)
 else:
     results_ES_ch4_co2.drop(columns = '_merge',inplace = True)
 
@@ -515,15 +527,20 @@ flowsheet = pd.DataFrame({'Field_name':Field_name,'original_file':original_file,
 results_ES_ch4_co2_fs =results_ES_ch4_co2.merge(flowsheet,how='outer',indicator = True)
 if results_ES_ch4_co2_fs[results_ES_ch4_co2_fs['_merge']!='both'].shape[0]>0:
     print('Unmatched Field: results_ES_ch4_co2 // flowsheet. Check the merge')
-    print(results_ES_ch4_co2_fs[results_ES_ch4_co2_fs['_merge']=='left only'])
+    print(results_ES_ch4_co2_fs[results_ES_ch4_co2_fs['_merge']!='both'])
+    results_ES_ch4_co2_fs.drop(columns = '_merge',inplace = True)
 else:
     results_ES_ch4_co2_fs.drop(columns = '_merge',inplace = True)
 
+
+
+
 results_ES_ch4_co2_fs['GWP']='100yr'
-results_ES_ch4_co2_fs.to_excel(sp_dir + '/Upstream/Analytics/all_upstream_results.xlsx',index = False)
+#results_ES_ch4_co2_fs.to_excel('../Upstream/Analytics/all_upstream_results.xlsx',index = False)
+
 
 print('Update upstream results in OCI database...')
 import sqlite3
-connection = sqlite3.connect(sp_dir + "/OCI_Database.db")
+connection = sqlite3.connect("../OCI_Database.db")
 results_ES_ch4_co2_fs.to_sql('upstream_results', connection, if_exists='replace', index=False)
 print('Upstream data updates completed.')
