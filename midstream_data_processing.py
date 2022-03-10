@@ -1,20 +1,21 @@
+## Extract PRELIM results for OCI, PRELIM and Haverly assays, including product slates, emission, API gravity, and sulfur content
+
 import pandas as pd
 import os
 from os.path import join    
 
-sp_dir= '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 
 print('Extracting product slates and emission data from Liam batch run results...')
-onehundredyr_path = [sp_dir +'/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 100y',
-                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI 100y',
-                              sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM 100y']
+onehundredyr_path = ['../Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly 100y',
+                              '../Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI 100y',
+                              '../Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM 100y']
 
 # Remove files that are wrongly in the 100yr Haverly folder, based on the file name in new 20 yr haverly folder
 # This is a one time fix and should only be run once 
-for filename in os.listdir(onehundredyr_path[0]):
-    if filename not in os.listdir(sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/New Results/Haverly 20y'):
-        print(filename)
-        os.remove(onehundredyr_path[0]+'/'+filename)
+# for filename in os.listdir(onehundredyr_path[0]):
+#     if filename not in os.listdir(sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/New Results/Haverly 20y'):
+#         print(filename)
+#         os.remove(onehundredyr_path[0]+'/'+filename)
 
 onehundredyr_assay_file_list = dict()
 for directory in onehundredyr_path:
@@ -91,9 +92,13 @@ final_assay_library.reset_index(inplace = True)
 
 final_assay_library.rename(columns={'level_0':'assay_group',0:'assay_name'},inplace = True)
 
+
+
 #Take the first assay of duplicate assays in each assay group
 
-final_assay_library = final_assay_library.groupby(['assay_group','assay_name']).first()
+#final_assay_library = final_assay_library.groupby(['assay_group','assay_name']).first()
+
+
 
 final_assay_library = final_assay_library.dropna(axis = 1,how ='all')
 
@@ -108,9 +113,9 @@ final_assay_library['assay_name'] = final_assay_library['assay_name'].apply(lamb
 
 
 # Use the old twenty year file names to get correct assay names. Reason: 100 year file name is not clean. 
-twentyyr_path = {'haverly': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/Haverly 20y',
-                          'oci': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/OCI 20y',
-                          'prelim': sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/PRELIM 20y'}                              
+twentyyr_path = {'haverly': '../Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/Haverly 20y',
+                          'oci': '../Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/OCI 20y',
+                          'prelim': '../Midstream/Liam_Batchrun/OCI 3.0 (20-y GWP)/Old Results/PRELIM 20y'}                              
 
 def assay_name_20yr(assay_group,assay_id):
     '''return assay_name_20yr in the 20 year direcotry based on file names. 
@@ -126,9 +131,9 @@ final_assay_library['assay_name']=final_assay_library.apply(lambda x: assay_name
 
 # Get throughput and sulfur content values from the three assay files and merge into the assay library
 
-assay_files = {'haverly':[sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly PRELIM Assays.xlsx',535],
-              'prelim':[sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM Assays.xlsx',149],
-              'oci':[sp_dir + '/Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI Assay List Expanded 107.xlsx',107]}
+assay_files = {'haverly':['../Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/Haverly PRELIM Assays.xlsx',535],
+              'prelim':['../Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/PRELIM Assays.xlsx',149],
+              'oci':['../Midstream/Liam_Batchrun/OCI 3.0 (100-y GWP)/OCI Assay List Expanded 107.xlsx',107]}
 
 assay_bbl_sulfur=dict()
 for assay in assay_files:
@@ -164,6 +169,8 @@ assay_bbl_sulfur_library.drop(columns = 'index',inplace = True)
 assay_bbl_sulfur_library = assay_bbl_sulfur_library.groupby(['assay_group','assay_name']).first()
 
 assay_bbl_sulfur_library.reset_index(inplace = True)
+
+
 #assay_bbl_sulfur_library.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/assay_bbl_sulfur_library.xlsx',index = False)
 
 final_assay_library_merged = final_assay_library.merge(assay_bbl_sulfur_library,how = 'left',indicator = True)
@@ -174,13 +181,18 @@ if final_assay_library_merged[final_assay_library_merged['_merge']!='both'].shap
 else:
     final_assay_library_merged.drop(columns = '_merge')
 
-final_assay_library_merged.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/final_assay_library.xlsx',index = False)
+final_assay_library_merged.to_excel('../Midstream/Liam_Batchrun/Analytics/final_assay_library.xlsx',index = False)
 
+
+
+
+## Mapping OPGEE modelled fields to OCI, PRELIM and Haverly Assays based on API gravity and Surfur content
 
 import sqlite3
-connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
+connection = sqlite3.connect("../OCI_Database.db")
+
 #final_assay_library_merged.to_sql('assay_library',connection, if_exists='replace', index=False)
-field_assay = pd.read_sql('select * from field_assay_mapping',connection)
+field_assay = pd.read_sql('select * from field_assay_mapping_old',connection)
 
 #pd.set_option("display.max_rows", 999)
 
@@ -199,11 +211,69 @@ field_assay['assay_id'] = field_assay['assay_id'].apply(lambda x: str(int(x)))
 merged_df = field_assay.merge(final_assay_library_merged,left_on=['assay_id','assay_category'],right_on=['assay_id','assay_group'],how = 'left')
 
 
-merged_df.to_csv(sp_dir +'/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.csv',index = False)
+
+
+merged_df.drop(columns = '_merge',inplace = True)
+
+## Get OPGEE input API from the upstream_result table
+
+import sqlite3
+connection = sqlite3.connect("../OCI_Database.db")
+upstream = pd.read_sql('select Field_name,"Field location (Country)",original_file,"API gravity" from upstream_results where year==2020',connection)
+
+field_assay = upstream.merge(merged_df, right_on=['opgee_field','opgee_country'],left_on=['Field_name','Field location (Country)'],indicator = True)
+
+field_assay['API_abs_diff']=abs(field_assay['API gravity']-field_assay['gravity'])
+
+# For multiple assay match in solomon's blender, pick the one that is closest to the OPGEE input API gravity so it's still using the closest (API) regional assay 
+field_assay_single_match = field_assay.loc[field_assay.groupby(['Field_name','Field location (Country)','original_file']).API_abs_diff.idxmin()].drop(columns = 'API_abs_diff')
+
+### Get list of fields for which the OPGEE input API gravity and the assay gravity are not in the same group of refineries: hydroskimming, medium conversion and deep conversion
+
+def gravity_bin(OPGEE_gravity,assay_gravity,assay_sulfur):
+    if OPGEE_gravity<22: 
+        if assay_gravity<22:
+            return True
+        else:
+            return False
+    elif OPGEE_gravity>=22 and OPGEE_gravity<=32:
+        if (assay_gravity>=22 and assay_gravity<=32) or (assay_gravity>32 and assay_sulfur>=0.5):
+            return True
+        else:
+            return False
+    elif OPGEE_gravity>32: 
+        if assay_gravity>32:
+            return True
+        else:
+            return False
+
+field_assay_single_match['same_bin?']=field_assay_single_match.apply(lambda x: gravity_bin(x['API gravity'],x['gravity'],x['sulfur']),axis =1)
+
+API_unmatched = field_assay_single_match[field_assay_single_match['same_bin?']==False]
+
+# Visualize to check for grouping 
+
+import plotly.express as px
+
+fig = px.scatter(API_unmatched,x='API gravity',y='gravity',hover_data=['opgee_field','opgee_country'])
+fig.add_shape(type="line",
+              x0=0, 
+              y0=0, 
+              x1=120, 
+              y1=120)
+fig.add_shape(type= "line",x0=22,x1=22,y0=0,y1=120)
+fig.add_shape(type= "line",x0=32,x1=32,y0=0,y1=120)
+fig.add_shape(type= "line",x0=0,x1=120,y0=22,y1=22)
+fig.add_shape(type= "line",x0=0,x1=120,y0=32,y1=32)
+
+
+API_unmatched[['Field_name','Field location (Country)','API gravity','gravity','sulfur','normalized_ratio','Assay']]
+
+field_assay_single_match.to_csv('../Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.csv',index = False)
 
 # Reload the file from Excel to automatically naming 
 # the columns with numbers to avoid duplicated column names
-merged_df = pd.read_csv(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.csv')
+field_assay_single_match = pd.read_csv('../Midstream/Liam_Batchrun/Analytics/field_assay_slate_emission.csv')
 
 numerical_columns = [
  'Gasoline',
@@ -304,35 +374,32 @@ numerical_columns = [
 'gravity']
 
 # calculate product slates and emissions for composite assays
-merged_df[numerical_columns] = merged_df[numerical_columns].multiply(merged_df['normalized_ratio'], axis="index")
+#field_assay_single_match[numerical_columns] = field_assay_single_match[numerical_columns].multiply(merged_df['normalized_ratio'], axis="index")
 
 
 
-non_numerical = [i for i in merged_df.columns.to_list() if i not in numerical_columns]
+non_numerical = [i for i in field_assay_single_match.columns.to_list() if i not in numerical_columns]
 
 non_numerical.remove('ratio')
 
 non_numerical.remove('normalized_ratio')
 
-field_slate_emission = merged_df.groupby(['opgee_field','opgee_country'])[numerical_columns].agg('sum')
+#field_slate_emission = merged_df.groupby(['opgee_field','opgee_country'])[numerical_columns].agg('sum')
 
 
-field_slate_emission[['Confidence','assay_category','assay_id','correct_assay_name','Default Refinery',
-                      'normalized_ratio']] = merged_df.groupby(['opgee_field','opgee_country'])['Confidence','assay_category','assay_id','correct_assay_name','Default Refinery','normalized_ratio'].agg('first')
 
 
-field_slate_emission = field_slate_emission.reset_index()
-
+# Reassign confidence score for Solomon's assay blender single pick to 4
 import numpy as np
-field_slate_emission['matched_assay']=np.where(field_slate_emission['normalized_ratio']==1.0,field_slate_emission['correct_assay_name'],'Composite Proxy Assays')
+field_assay_single_match['Confidence']=np.where(field_assay_single_match['normalized_ratio']==1.0,field_assay_single_match['Confidence'],4.0)
 
-field_slate_emission.drop(columns ='correct_assay_name',inplace = True)
-field_slate_emission['GWP']='100yr'
+field_assay_single_match.drop(columns =['correct_assay_name','Field_name','Field location (Country)','index'],inplace = True)
+field_assay_single_match['GWP']='100yr'
 
 #field_slate_emission.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/field_slate_emission.xlsx',index = False)
 
 print('Updating midstream results in OCI database...')
 
-field_slate_emission.to_sql('midstream_results',connection, if_exists='replace', index=False)
+field_assay_single_match.to_sql('midstream_results',connection, if_exists='replace', index=False)
 
 print('Midstream updates completed.')
