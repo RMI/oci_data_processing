@@ -7,7 +7,7 @@ opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 print('Merging upstream and midstream results...')
 
 import sqlite3
-connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
+connection = sqlite3.connect("../OCI_Database.db")
 
 upstream = pd.read_sql('select * from upstream_results',connection)
 midstream = pd.read_sql('select * from midstream_results',connection)
@@ -125,8 +125,8 @@ slate_index = pd.read_csv(opem_dir + '/src/opem/products/product_slates/all_prod
 
 opem_product_slate.index = slate_index.iloc[:,0]
 
-opem_product_slate.to_excel(sp_dir + '/Downstream/Analytics/all_product_slates.xlsx')
-opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
+opem_product_slate.to_excel('../Downstream/Analytics/all_product_slates.xlsx')
+opem_product_slate.to_csv(opem_dir+'/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
 
@@ -147,7 +147,7 @@ opem_input['GWP selection (yr period, 100 or 20)']=100
 
 opem_input_T = opem_input.set_index('OPEM_field_name').T
 
-opem_input_T.to_excel(sp_dir+'/Downstream/Analytics/opem_input.xlsx')
+opem_input_T.to_excel('../Downstream/Analytics/opem_input.xlsx')
 
 opem_input_index = pd.read_csv(opem_dir + '/opem_input.csv',header=0)
 opem_input_T.reset_index(inplace = True)
@@ -155,7 +155,7 @@ opem_input_T.reset_index(inplace = True)
 # Get the index from opem_input.csv and update it with opem input values
 df = pd.concat([opem_input_index.iloc[:,:5],opem_input_T.iloc[:,1:]],axis = 1)
 
-df.to_csv(opem_dir + '/opem_input.csv',index=False)
+df.to_csv('./opem_input.csv',index=False)
 
 print('Running opem...')
 os.system('opem')
@@ -172,7 +172,7 @@ opem_output_T.reset_index(inplace = True)
 opem_output_T.to_excel('opem_output.xlsx',index=False)
 opem_output_T = pd.read_excel('opem_output.xlsx')
 up_mid_down = upstream_midstream_for_opem.merge(opem_output_T,left_on='OPEM_field_name',right_on ='index',how='left')
-up_mid_down.to_excel(sp_dir+'/Downstream/Analytics/up_mid_down_new_100yr.xlsx')
+up_mid_down.to_excel('../Downstream/Analytics/up_mid_down_new_100yr.xlsx')
 up_mid_down.to_sql('up_mid_downstream_results',connection, if_exists='replace', index=False)
 print('OPEM run completed and up_mid_down file updated.')
 
