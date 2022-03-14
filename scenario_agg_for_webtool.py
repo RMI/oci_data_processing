@@ -1,3 +1,52 @@
+import pandas as pd
+import sqlite3
+import numpy as np 
+
+connection = sqlite3.connect("../OCI_Database.db")
+up_mid_down = pd.read_sql('select * from scenario_up_mid_down',connection)
+
+# Aggregation for webtool 
+agg_list = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/aggregation_list_CAfields.csv')
+scenario = pd.DataFrame()
+
+scenario['Field Name']=up_mid_down['Field_name']
+scenario['Country'] = up_mid_down['Field location (Country)']
+scenario['Scenario']=up_mid_down['Scenario']
+scenario['toggle_value']=up_mid_down['toggle_value'].apply(lambda x: x.replace(':','').replace(' & ','_').lower())
+scenario['toggle_stage']=up_mid_down['toggle_stage']
+scenario['flaring_ghg(t/d)'] = up_mid_down['flaring_ghg(t/d)']
+scenario['Total BOED']=up_mid_down['Total BOE Produced']
+scenario['combustion_ratio']=up_mid_down['combustion_ratio']
+
+def upstream_gmj_kgboe_convert(x):
+    return(up_mid_down[x]*up_mid_down['ES_MJperd']/up_mid_down['Total BOE Produced']/1000)
+
+upstream_emission_category = {
+    'Upstream: Exploration (kgCO2eq/boe)':'e-Total GHG emissions',
+    'Upstream: Drilling & Development (kgCO2eq/boe)':'d-Total GHG emissions',
+    'Upstream: Crude Production & Extraction (kgCO2eq/boe)':'p-Total GHG emissions',
+    'Upstream: Surface Processing (kgCO2eq/boe)':'s-Total GHG emissions',
+    'Upstream: Maintenance (kgCO2eq/boe)':'m-Total GHG emissions',
+    'Upstream: Waste Disposal (kgCO2eq/boe)':'w-Total GHG emissions',
+    'Upstream: Crude Transport (kgCO2eq/boe)':'t-Total GHG emissions',
+    'Upstream: Other Small Sources (kgCO2eq/boe)':'Other small sources',
+    'Upstream: Offsite emissions credit/debit (kgCO2eq/boe)':'Offsite emissions credit/debit',
+    'Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)':'CSS-Total CO2 sequestered'
+}
+
+for i in upstream_emission_category:
+    scenario[i] = upstream_gmj_kgboe_convert(upstream_emission_category[i])
+    
+
+scenario['Upstream Carbon Intensity (kgCO2eq/boe)']=sum([scenario[i] for i in upstream_emission_category])
+# Adjust the combustion ratio for Electrifying Scenario 
+
+
+
+
+scenario['Upstream Carbon Intensity (kgCO2eq/boe)'] = np.where((scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='on'), scenario['Upstream Carbon Intensity (kgCO2eq/boe)']*(1-scenario['combustion_ratio']),scenario['Upstream Carbon Intensity (kgCO2eq/boe)'])
+
+
 # Calculate Flare volume scenario by editing the flaring related GHG. 0.5 and 1.5 multiplier from default scenario
 scenario_fv_def = scenario[(scenario['Scenario']=='Electrify')&(scenario['toggle_value']=='Off')].copy(deep=True)
 
@@ -162,9 +211,6 @@ midstream = midstream.melt(id_vars=['slider','Key','Default?','toggle_value','st
 midstream.rename(columns = {'variable':'Field_name','value':'Midstream Carbon Intensity (kgCO2eq/bbl)'},inplace = True)
 
 # Get Default Scenario Volume from up_mid_down
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-import sqlite3
-connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 up_mid_down = pd.read_sql('''select "Field_name", "Oil production volume", "Total BOE Produced"
 from scenario_up_mid_down
 where Scenario =="Electrify" and toggle_value == "Off"''',connection)
@@ -227,7 +273,7 @@ CI_20yr = pd.concat([GWP_20.iloc[:,3],GWP_20.iloc[:,5:]],axis =1)
 CI_20yr = CI_20yr.melt(id_vars='stage').rename(columns = {'variable':'Field Name','value':'GWP-20'})
 
 
-MI = pd.read_csv(sp_dir + '/Webtool updates/basedata/infobase.csv')
+MI = pd.read_csv('../Webtool updates/basedata/infobase.csv')
 
 MI = MI[['Field Name','Upstream Methane Intensity (kgCH4/boe)',
        'Midstream Methane Intensity (kgCH4/boe)',
@@ -264,4 +310,4 @@ CI_MI['toggle_stage']='Global Warming Potential'
 
 all_scenarios_GWP=pd.concat([all_scenarios,CI_MI],axis=0)
 
-all_scenarios_GWP.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/slider_10.xlsx',index = False)
+all_scenarios_GWP.to_excel('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/slider_11.xlsx',index = False)
