@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-
 import sqlite3
 connection = sqlite3.connect("../OCI_Database.db")
 up_mid_down = pd.read_sql('select * from up_mid_downstream_results',connection)
@@ -128,7 +127,7 @@ upstream_emission_category = {
 for i in upstream_emission_category:
     OCI_info100[i] = upstream_gmj_kgboe_convert(upstream_emission_category[i])
 
-OCI_info100['Upstream Emissions Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in upstream_emission_category])
+OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in upstream_emission_category])
 
 def midstream_scaler(x):
     '''scale midstream emission from kgCO2eq/bbl to kgCO2eq/boe'''
@@ -150,7 +149,7 @@ for i in midstream_emission_category_CO2:
 
 
 
-OCI_info100['Midstream Emissions Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in midstream_emission_category_CO2])
+OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']=sum([OCI_info100[i] for i in midstream_emission_category_CO2])
 
 # Downstream Transport to Consumer include refinery product transport and NGL transport
 OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] =up_mid_down['Transport Emissions Intensity (kg CO2eq. /BOE)']+\
@@ -183,7 +182,7 @@ OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
 OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)'] = \
     up_mid_down['Natural Gas Combustion Emissions Intensity (kg CO2eq. / BOE)']
     
-OCI_info100['Downstream Emissions Intensity (kgCO2eq/boe)'] = (OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
+OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
     + OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
     + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']
     + OCI_info100['Downstream: Gasoline for Cars (kgCO2eq/boe)'] 
@@ -197,27 +196,27 @@ OCI_info100['Downstream Emissions Intensity (kgCO2eq/boe)'] = (OCI_info100['Down
     + OCI_info100['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']
     + OCI_info100['Downstream: Natural Gas (kgCO2eq/boe)']) 
 
-OCI_info100['Total Emission Emissions Intensity (kgCO2eq/boe)']=OCI_info100['Upstream Emissions Intensity (kgCO2eq/boe)']+\
-OCI_info100['Midstream Emissions Intensity (kgCO2eq/boe)']+OCI_info100['Downstream Emissions Intensity (kgCO2eq/boe)']
+OCI_info100['Total Emission Carbon Intensity (kgCO2eq/boe)']=OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']+\
+OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']+OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)']
 
-OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']=(OCI_info100['Upstream Emissions Intensity (kgCO2eq/boe)']
-    + OCI_info100['Midstream Emissions Intensity (kgCO2eq/boe)']
+OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']=(OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)']
+    + OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)']
     + OCI_info100['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
     + OCI_info100['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
     + OCI_info100['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']) 
 
-OCI_info100['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info100['Total Emission Emissions Intensity (kgCO2eq/boe)'] \
+OCI_info100['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info100['Total Emission Carbon Intensity (kgCO2eq/boe)'] \
     - OCI_info100['Industry GHG Responsibility (kgCO2eq/boe)']
 
 OCI_info20 = pd.DataFrame()
 OCI_info20['Field Name']=up_mid_down['Field_name']
 OCI_info20['Country'] = up_mid_down['Field location (Country)']
 
-OCI_info20['Upstream Emissions Intensity (kgCO2eq/boe)'] = (OCI_info100['Upstream Emissions Intensity (kgCO2eq/boe)'] + OCI_infobase['Upstream Methane Intensity (kgCH4/boe)']*55)
+OCI_info20['Upstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Upstream Carbon Intensity (kgCO2eq/boe)'] + OCI_infobase['Upstream Methane Intensity (kgCH4/boe)']*55)
 
-OCI_info20['Midstream Emissions Intensity (kgCO2eq/boe)'] = (OCI_info100['Midstream Emissions Intensity (kgCO2eq/boe)'] + OCI_infobase['Midstream Methane Intensity (kgCH4/boe)']*55)
+OCI_info20['Midstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Midstream Carbon Intensity (kgCO2eq/boe)'] + OCI_infobase['Midstream Methane Intensity (kgCH4/boe)']*55)
 
-OCI_info20['Downstream Emissions Intensity (kgCO2eq/boe)'] = (OCI_info100['Downstream Emissions Intensity (kgCO2eq/boe)'] + OCI_infobase['Downstream Methane Intensity (kgCH4/boe)']*55)
+OCI_info20['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info100['Downstream Carbon Intensity (kgCO2eq/boe)'] + OCI_infobase['Downstream Methane Intensity (kgCH4/boe)']*55)
 
 # Start Aggregation 
 
@@ -410,14 +409,14 @@ columns_to_be_averaged = ['Upstream: Exploration (kgCO2eq/boe)',
  'Upstream: Other Small Sources (kgCO2eq/boe)',
  'Upstream: Offsite emissions credit/debit (kgCO2eq/boe)',
  'Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)',
- 'Upstream Emissions Intensity (kgCO2eq/boe)',
+ 'Upstream Carbon Intensity (kgCO2eq/boe)',
  'Midstream: Electricity (kgCO2eq/boe)',
  'Midstream: Heat (kgCO2eq/boe)',
  'Midstream: Steam (kgCO2eq/boe)',
  'Midstream: Hydrogen via SMR (kgCO2eq/boe)',
  'Midstream: Hydrogen via CNR (kgCO2eq/boe)',
  'Midstream: Other Emissions (kgCO2eq/boe)',
- 'Midstream Emissions Intensity (kgCO2eq/boe)',
+ 'Midstream Carbon Intensity (kgCO2eq/boe)',
  'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)',
  'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)',
  'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)',
@@ -431,8 +430,8 @@ columns_to_be_averaged = ['Upstream: Exploration (kgCO2eq/boe)',
  'Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)',
  'Downstream: Petrochemical Feedstocks (kgCO2eq/boe)',
  'Downstream: Natural Gas (kgCO2eq/boe)',
- 'Downstream Emissions Intensity (kgCO2eq/boe)',
- 'Total Emission Emissions Intensity (kgCO2eq/boe)',
+ 'Downstream Carbon Intensity (kgCO2eq/boe)',
+ 'Total Emission Carbon Intensity (kgCO2eq/boe)',
  'Industry GHG Responsibility (kgCO2eq/boe)',
  'Consumer GHG Responsibility (kgCO2eq/boe)']
 
@@ -456,9 +455,9 @@ OCI_info20['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total
 OCI_info20_agg = pd.merge(OCI_info20, agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
 
 
-columns_to_be_averaged = ['Upstream Emissions Intensity (kgCO2eq/boe)',
-       'Midstream Emissions Intensity (kgCO2eq/boe)',
-       'Downstream Emissions Intensity (kgCO2eq/boe)']
+columns_to_be_averaged = ['Upstream Carbon Intensity (kgCO2eq/boe)',
+       'Midstream Carbon Intensity (kgCO2eq/boe)',
+       'Downstream Carbon Intensity (kgCO2eq/boe)']
 
 OCI_info20_aggregated = pd.concat([
 OCI_info20_agg.groupby(['Country','Aggregation']).apply(
