@@ -185,7 +185,7 @@ connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
 scenario_fields = pd.read_sql('select DISTINCT Field_name from scenario_upstream_results', connection)
 
 
-field_assay = pd.read_sql('select * from field_assay_mapping where opgee_field in (select DISTINCT Field_name from scenario_upstream_results)',connection)
+field_assay = pd.read_sql('select opgee_field, opgee_country, assay_category, assay_id from midstream_results where opgee_field in (select DISTINCT Field_name from scenario_upstream_results)',connection)
 field_assay['assay_id'] = field_assay['assay_id'].apply(lambda x: str(int(x)))
 
 
@@ -318,9 +318,8 @@ merged_df = pd.read_excel(sp_dir + '/Deep Dive page/Analytics/nondefault_field_a
 
 import numpy as np
 field_slate_emission = merged_df
-field_slate_emission['matched_assay']=np.where(field_slate_emission['normalized_ratio']==1.0,field_slate_emission['correct_assay_name'],'Composite Proxy Assays')
-
-field_slate_emission.drop(columns ='correct_assay_name',inplace = True)
+#field_slate_emission['matched_assay']=field_slate_emission['assay_name']
+#field_slate_emission.drop(columns ='correct_assay_name',inplace = True)
 field_slate_emission['GWP']='20yr'
 
 field_slate_emission.to_excel(sp_dir + '/Deep Dive page/Analytics/nondefault_field_slate_emission.xlsx',index = False)

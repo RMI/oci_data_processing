@@ -13,7 +13,7 @@ directory = os.fsencode(d)
 list_csv =[]
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
-    if filename.endswith('.csv') and not filename.startswith('2'): 
+    if filename.endswith('.csv') and not filename.startswith('2') and not filename.startswith('economist'): 
         # Remove legacy files that start with Vent-fug (naming error that causes bug in parsing filename)
         if filename.startswith('Vent-fug'): 
             os.remove(d+filename)

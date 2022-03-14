@@ -3,10 +3,9 @@ import sqlite3
 import os
 import numpy as np
 
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
 opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 
-connection = sqlite3.connect(sp_dir+"/OCI_Database.db")
+connection = sqlite3.connect("../OCI_Database.db")
 
 
 def opem_input_prep(upstream,midstream):
@@ -131,7 +130,7 @@ def opem_input_prep(upstream,midstream):
 
     opem_product_slate.index = slate_index.iloc[:,0]
 
-    opem_product_slate.to_excel(sp_dir + '/Deep Dive page/Analytics/all_product_slates.xlsx')
+    opem_product_slate.to_excel('../Deep Dive page/Analytics/all_product_slates.xlsx')
     opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
     print('Preparing data for opem_input...')
@@ -153,7 +152,7 @@ def opem_input_prep(upstream,midstream):
 
     opem_input_T = opem_input.set_index('OPEM_field_name').T
 
-    opem_input_T.to_excel(sp_dir + '/Deep Dive page/Analytics/opem_input.xlsx')
+    #opem_input_T.to_excel(sp_dir + '/Deep Dive page/Analytics/opem_input.xlsx')
 
     opem_input_index = pd.read_csv(opem_dir + '/opem_input.csv',header=0)
     opem_input_T.reset_index(inplace = True)
@@ -161,7 +160,7 @@ def opem_input_prep(upstream,midstream):
     # Get the index from opem_input.csv and update it with opem input values
     df = pd.concat([opem_input_index.iloc[:,:5],opem_input_T.iloc[:,1:]],axis = 1)
 
-    df.to_csv(opem_dir + '/opem_input.csv',index=False)
+    df.to_csv('./opem_input.csv',index=False)
     return upstream_midstream_for_opem
 
 
@@ -328,7 +327,7 @@ slate_index = pd.read_csv(opem_dir + '/src/opem/products/product_slates/all_prod
 
 opem_product_slate.index = slate_index.iloc[:,0]
 
-opem_product_slate.to_excel(sp_dir + '/Deep Dive page/Analytics/all_product_slates.xlsx')
+opem_product_slate.to_excel('../Deep Dive page/Analytics/all_product_slates.xlsx')
 opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
@@ -350,7 +349,7 @@ opem_input['GWP selection (yr period, 100 or 20)']=20
 
 opem_input_T = opem_input.set_index('OPEM_field_name').T
 
-opem_input_T.to_excel(sp_dir + '/Deep Dive page/Analytics/opem_input.xlsx')
+opem_input_T.to_excel('../Deep Dive page/Analytics/opem_input.xlsx')
 
 opem_input_index = pd.read_csv(opem_dir + '/opem_input.csv',header=0)
 opem_input_T.reset_index(inplace = True)
@@ -358,7 +357,7 @@ opem_input_T.reset_index(inplace = True)
 # Get the index from opem_input.csv and update it with opem input values
 df = pd.concat([opem_input_index.iloc[:,:5],opem_input_T.iloc[:,1:]],axis = 1)
 
-df.to_csv(opem_dir + '/opem_input.csv',index=False)
+df.to_csv('./opem_input.csv',index=False)
 
 #upstream_default['toggle_value'] = upstream_midstream_for_opem_midtoggle['Refinery Type']
 #upstream_midstream_for_opem_midtoggle = opem_input_prep(upstream_default,midstream)
@@ -383,7 +382,7 @@ for s in downtoggle:
             df.iloc[[17,20],5:]=float(t)
         else:
             df.iloc[76:147,5:]= pd.concat([float(t)*df.iloc[76:147,4]]*(df.iloc[76:147,5:].shape[1]),axis=1,ignore_index=True)
-        df.to_csv(opem_dir + '/opem_input.csv',index = False)
+        df.to_csv('./opem_input.csv',index = False)
         print('Running opem for scenario '+s+' toggle value ' +t)
         os.system('opem')
         downresult.append(opem_output_prep(upstream_midstream_for_opem_uptoggle))
