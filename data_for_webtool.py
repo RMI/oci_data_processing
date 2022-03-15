@@ -388,7 +388,7 @@ OCI_infobase_aggregated = OCI_infobase_aggregated.round({
 
 #OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Field Name']!='Amenamkpono') & (OCI_infobase_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_infobase_aggregated['Field Name']!='Brent')]
 
-OCI_infobase_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/infobase.csv',index = False)
+OCI_infobase_aggregated.to_csv('../oci/basedata/infobase.csv',index = False)
 
 OCI_info100['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total BOE Produced']*365
 
@@ -444,30 +444,31 @@ OCI_info100_aggregated.reset_index(inplace = True)
 
 OCI_info100_aggregated.rename(columns = {'Aggregation':'Field Name'},inplace = True)
 
-OCI_info100_aggregated = OCI_info100_aggregated.round(2)
+OCI_info100_aggregated = OCI_info100_aggregated.round(0)
 
 #OCI_info100_aggregated = OCI_info100_aggregated[(OCI_info100_aggregated['Field Name']!='Amenamkpono') & (OCI_info100_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info100_aggregated['Field Name']!='Brent')]
 
-OCI_info100_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/info100.csv',index = False)
+OCI_info100_aggregated.to_csv('../oci/basedata/info100.csv',index = False)
 
 OCI_info20['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total BOE Produced']*365
-
-OCI_info20_agg = pd.merge(OCI_info20, agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
-
+OCI_info20['Consumer GHG Responsibility (kgCO2eq/boe)']= OCI_info100['Consumer GHG Responsibility (kgCO2eq/boe)']
 
 columns_to_be_averaged = ['Upstream Carbon Intensity (kgCO2eq/boe)',
        'Midstream Carbon Intensity (kgCO2eq/boe)',
        'Downstream Carbon Intensity (kgCO2eq/boe)']
 
+OCI_info20['Industry GHG Responsibility (kgCO2eq/boe)']=OCI_info20[columns_to_be_averaged].sum(axis=1)-OCI_info20['Consumer GHG Responsibility (kgCO2eq/boe)']
+OCI_info20_agg = pd.merge(OCI_info20, agg_list,left_on = 'Field Name', right_on='Field name',how = 'left')
+
 OCI_info20_aggregated = pd.concat([
 OCI_info20_agg.groupby(['Country','Aggregation']).apply(
     lambda x:w_avg(x,col,'2020 Total Oil and Gas Production Volume (boe)')).rename(col) 
-    for col in columns_to_be_averaged],axis=1)
+    for col in columns_to_be_averaged+['Consumer GHG Responsibility (kgCO2eq/boe)','Industry GHG Responsibility (kgCO2eq/boe)']],axis=1)
 
 OCI_info20_aggregated.reset_index(inplace = True)
 OCI_info20_aggregated.rename(columns = {'Aggregation':'Field Name'},inplace = True)
 
-OCI_info20_aggregated = OCI_info20_aggregated.round(2)
+OCI_info20_aggregated = OCI_info20_aggregated.round(0)
 
 #OCI_info20_aggregated = OCI_info20_aggregated[(OCI_info20_aggregated['Field Name']!='Amenamkpono') & (OCI_info20_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info20_aggregated['Field Name']!='Brent')]
-OCI_info20_aggregated.to_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Webtool updates/basedata/info20.csv',index = False)
+OCI_info20_aggregated.to_csv('../oci/basedata/info20.csv',index = False)
