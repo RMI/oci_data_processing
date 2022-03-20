@@ -278,7 +278,8 @@ OCI_infobase_aggregated['Flare Rate']=OCI_infobase_aggregated.apply(lambda x: fl
 OCI_infobase_aggregated.reset_index(inplace = True)
 
 OPEC_list = ['Equatorial Guinea','Gabon','Republic of the Congo','Iran','Iraq','Kuwait','Saudi Arabia',
-             'United Arab Emirates','Algeria','Libya','Venezuela','Angola','Nigeria','Russian Federation']
+             'United Arab Emirates','Algeria','Libya','Venezuela','Angola','Nigeria','Russian Federation',
+             'Azerbaijan','Bahrain','Kazakhstan','Malaysia','Mexico','Oman']
 
 OCI_infobase_aggregated['OPEC'] = OCI_infobase_aggregated['Country'].apply(lambda x:'Y' if x in OPEC_list else 'N')
 
@@ -386,7 +387,7 @@ OCI_infobase_aggregated = OCI_infobase_aggregated.round({
     'Gas composition CO2':1,
     'Gas composition C1':1})
 
-#OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Field Name']!='Amenamkpono') & (OCI_infobase_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_infobase_aggregated['Field Name']!='Brent')]
+OCI_infobase_aggregated = OCI_infobase_aggregated[(OCI_infobase_aggregated['Field Name']!='Amenamkpono') & (OCI_infobase_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_infobase_aggregated['Field Name']!='Brent')]
 
 OCI_infobase_aggregated.to_csv('../oci/basedata/infobase.csv',index = False)
 
@@ -446,7 +447,7 @@ OCI_info100_aggregated.rename(columns = {'Aggregation':'Field Name'},inplace = T
 
 OCI_info100_aggregated = OCI_info100_aggregated.round(0)
 
-#OCI_info100_aggregated = OCI_info100_aggregated[(OCI_info100_aggregated['Field Name']!='Amenamkpono') & (OCI_info100_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info100_aggregated['Field Name']!='Brent')]
+OCI_info100_aggregated = OCI_info100_aggregated[(OCI_info100_aggregated['Field Name']!='Amenamkpono') & (OCI_info100_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info100_aggregated['Field Name']!='Brent')]
 
 OCI_info100_aggregated.to_csv('../oci/basedata/info100.csv',index = False)
 
@@ -470,5 +471,5 @@ OCI_info20_aggregated.rename(columns = {'Aggregation':'Field Name'},inplace = Tr
 
 OCI_info20_aggregated = OCI_info20_aggregated.round(0)
 
-#OCI_info20_aggregated = OCI_info20_aggregated[(OCI_info20_aggregated['Field Name']!='Amenamkpono') & (OCI_info20_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info20_aggregated['Field Name']!='Brent')]
+OCI_info20_aggregated = OCI_info20_aggregated[(OCI_info20_aggregated['Field Name']!='Amenamkpono') & (OCI_info20_aggregated['Field Name']!='Rincon del Mangrullo') & (OCI_info20_aggregated['Field Name']!='Brent')]
 OCI_info20_aggregated.to_csv('../oci/basedata/info20.csv',index = False)
