@@ -160,7 +160,7 @@ df.to_csv('./opem_input.csv',index=False)
 print('Running opem...')
 os.system('opem')
 
-opem_output = pd.read_csv(opem_dir + '/opem_output.csv',header=1)
+opem_output = pd.read_csv('./opem_output.csv',header=1)
 
 #upstream_midstream_for_opem['estimate_boe/d'] = upstream_midstream_for_opem['Oil production volume']*(1+upstream_midstream_for_opem['Gas-to-oil ratio (GOR)']/5800)
 
@@ -169,8 +169,8 @@ opem_output_T = opem_output.set_index('Selected Oil').T
 opem_output_T.reset_index(inplace = True)
 
 # Save and reload to get unique column headers
-opem_output_T.to_excel('opem_output.xlsx',index=False)
-opem_output_T = pd.read_excel('opem_output.xlsx')
+opem_output_T.to_excel('opem_output_1.xlsx',index=False)
+opem_output_T = pd.read_excel('opem_output_1.xlsx')
 up_mid_down = upstream_midstream_for_opem.merge(opem_output_T,left_on='OPEM_field_name',right_on ='index',how='left')
 up_mid_down.to_excel('../Downstream/Analytics/up_mid_down_new_100yr.xlsx')
 up_mid_down.to_sql('up_mid_downstream_results',connection, if_exists='replace', index=False)

@@ -130,7 +130,7 @@ def opem_input_prep(upstream,midstream):
 
     opem_product_slate.index = slate_index.iloc[:,0]
 
-    opem_product_slate.to_excel('../Deep Dive page/Analytics/all_product_slates.xlsx')
+    #opem_product_slate.to_excel('../Deep Dive page/Analytics/all_product_slates.xlsx')
     opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
     print('Preparing data for opem_input...')
@@ -327,7 +327,7 @@ slate_index = pd.read_csv(opem_dir + '/src/opem/products/product_slates/all_prod
 
 opem_product_slate.index = slate_index.iloc[:,0]
 
-opem_product_slate.to_excel('../Deep Dive page/Analytics/all_product_slates.xlsx')
+#opem_product_slate.to_excel('../Deep Dive page/Analytics/all_product_slates.xlsx')
 opem_product_slate.to_csv(opem_dir + '/src/opem/products/product_slates/all_product_slates.csv')
 
 print('Preparing data for opem_input...')
@@ -349,7 +349,7 @@ opem_input['GWP selection (yr period, 100 or 20)']=20
 
 opem_input_T = opem_input.set_index('OPEM_field_name').T
 
-opem_input_T.to_excel('../Deep Dive page/Analytics/opem_input.xlsx')
+#opem_input_T.to_excel('../Deep Dive page/Analytics/opem_input.xlsx')
 
 opem_input_index = pd.read_csv(opem_dir + '/opem_input.csv',header=0)
 opem_input_T.reset_index(inplace = True)
@@ -377,7 +377,7 @@ for s in downtoggle:
         upstream_default['Scenario']=s
         upstream_default['toggle_value']=t
         upstream_midstream_for_opem_uptoggle = opem_input_prep(upstream_default,midstream_default)
-        df = pd.read_csv(opem_dir + '/opem_input.csv')
+        df = pd.read_csv('./opem_input.csv')
         if s =='Petroleum Coke Combustion':                       
             df.iloc[[17,20],5:]=float(t)
         else:

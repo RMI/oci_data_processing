@@ -219,14 +219,14 @@ merged_df.drop(columns = '_merge',inplace = True)
 
 import sqlite3
 connection = sqlite3.connect("../OCI_Database.db")
-upstream = pd.read_sql('select Field_name,"Field location (Country)",original_file,"API gravity" from upstream_results where year==2020',connection)
+upstream = pd.read_sql('select Field_name,"Field location (Country)",original_file,"API gravity" from upstream_results',connection)
 
 field_assay = upstream.merge(merged_df, right_on=['opgee_field','opgee_country'],left_on=['Field_name','Field location (Country)'],indicator = True)
 
 field_assay['API_abs_diff']=abs(field_assay['API gravity']-field_assay['gravity'])
 
 # For multiple assay match in solomon's blender, pick the one that is closest to the OPGEE input API gravity so it's still using the closest (API) regional assay 
-field_assay_single_match = field_assay.loc[field_assay.groupby(['Field_name','Field location (Country)','original_file']).API_abs_diff.idxmin()].drop(columns = 'API_abs_diff')
+field_assay_single_match = field_assay.reindex(index = field_assay.groupby(['Field_name','Field location (Country)','original_file']).API_abs_diff.idxmin()).drop(columns = 'API_abs_diff')
 
 ### Get list of fields for which the OPGEE input API gravity and the assay gravity are not in the same group of refineries: hydroskimming, medium conversion and deep conversion
 

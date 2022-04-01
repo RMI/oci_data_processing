@@ -283,7 +283,10 @@ OPEC_list = ['Equatorial Guinea','Gabon','Republic of the Congo','Iran','Iraq','
 
 OCI_infobase_aggregated['OPEC'] = OCI_infobase_aggregated['Country'].apply(lambda x:'Y' if x in OPEC_list else 'N')
 
-OCI_infobase_aggregated['Oil or Gas']=OCI_infobase_aggregated['Gas-to-Oil Ratio (scf/bbl)'].apply(lambda x: 'Gas' if x>5800 else 'Oil')
+OCI_infobase_aggregated['Oil or Gas']=OCI_infobase_aggregated['Gas-to-Oil Ratio (scf/bbl)'].apply(lambda x: 'Gas' if x>100000 else 'Oil')
+
+##1. Heavy Oil (GOR ≤ 300 scf/bbl) 2. Light Oil (GOR 300 < GOR ≤ 100,000 scf/bbl) 
+# 3. Wet Gas (100,000 < GOR ≤1,000,000 scf/bbl) 4. Dry Gas (GOR > 1,000,000 scf/bbl) 5. Coal Bed Methane.
 
 def resource_type(x):
     if x['API Gravity']<15 and x['Oil or Gas']=='Oil':
