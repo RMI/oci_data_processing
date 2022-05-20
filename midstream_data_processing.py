@@ -195,24 +195,21 @@ else:
 
 final_assay_library_merged.to_excel(sp_dir + '/Midstream/Liam_Batchrun/Analytics/final_assay_library.xlsx',index = False)
 
-
 # ## Mapping OPGEE modelled fields to OCI, PRELIM and Haverly Assays based on API gravity and Surfur content
-
-
 pub_data = pd.read_excel(sp_dir + '/Upstream/Public Data Batch runs/Scraped Public Data.xlsx')
 field_assay = pub_data[['Field location (Country)', 'Field name', 'Assay Name']].dropna()
 field_assay['Field name'] = field_assay['Field name'].apply(lambda x: x.strip())
-
+field_assay['Field location (Country)'] = field_assay['Field location (Country)'].apply(lambda x: x.strip())
 
 midstream = field_assay.merge(final_assay_library_merged,left_on = 'Assay Name', right_on = 'assay_name',how = 'left', indicator = True)
+
 # only select one assay if there are multiple assays with the same name matched to the field
 midstream = midstream.groupby(['Field name','gwp']).first()
-
 
 if midstream[midstream['_merge']!='both'].shape[0]==0:
     midstream.drop(columns = '_merge',inplace = True)
 else:
     print('not fully merged. please check')
     print(midstream[midstream['_merge']!='both'])
-
+midstream.reset_index(inplace = True)
 midstream.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/midstream_postprocessed.csv')
