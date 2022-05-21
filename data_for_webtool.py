@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-df = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed.csv')
-up_mid_down = df #df[df['gwp']==20]
+up_mid_down = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed.csv')
+#up_mid_down = df #df[df['gwp']==20]
 OCI_info = pd.DataFrame()
 # select relevant columns from up_mid_down to OCI_info
 OCI_info['Field Name']=up_mid_down['Field_name']
@@ -20,7 +20,7 @@ OCI_info['Water-to-oil Ratio (bbl water/bbl oil)']=up_mid_down['Water-to-oil rat
 OCI_info['Gas shipped as LNG']=np.where(up_mid_down['lng?']==True,1,0)
 # If any of the following operation is 1 in OPGEE input, it's considered as Enhanced Oil Recovery
 OCI_info['Enhanced recovery']=up_mid_down[['Natural gas reinjection','Water flooding','Gas lifting',
-                                               'Gas flooding','Steam flooding']].any(axis='columns')
+                                            'Gas flooding','Steam flooding']].any(axis='columns')
 OCI_info['Fracked'] = up_mid_down['frack?']
 OCI_info['gwp']=up_mid_down['gwp']
 OCI_info['Default Refinery Configuration']=up_mid_down['Default Refinery']
@@ -188,8 +188,8 @@ def flare_rate_category(x):
 OCI_info['Flare Rate']=OCI_info.apply(lambda x: flare_rate_category(x),axis =1)
 
 OPEC_list = ['Equatorial Guinea','Gabon','Republic of the Congo','Iran','Iraq','Kuwait','Saudi Arabia',
-             'United Arab Emirates','Algeria','Libya','Venezuela','Angola','Nigeria','Russian Federation',
-             'Azerbaijan','Bahrain','Kazakhstan','Malaysia','Mexico','Oman']
+            'United Arab Emirates','Algeria','Libya','Venezuela','Angola','Nigeria','Russian Federation',
+            'Azerbaijan','Bahrain','Kazakhstan','Malaysia','Mexico','Oman']
 
 OCI_info['OPEC'] = OCI_info['Country'].apply(lambda x:'Y' if x in OPEC_list else 'N')
 
@@ -308,7 +308,82 @@ OCI_info = OCI_info.round({
     'Upstream Methane Emission Rate (gCH4/Total MJ Produced)':3,
     'Gas composition H2S':1,
     'Gas composition CO2':1,
-    'Gas composition C1':1})
-
-
+    'Gas composition C1':1,
+    'Total Emission Carbon Intensity (kgCO2eq/boe)': 0,
+    'Upstream Carbon Intensity (kgCO2eq/boe)':0,
+    'Midstream Carbon Intensity (kgCO2eq/boe)':0,
+    'Downstream Carbon Intensity (kgCO2eq/boe)':0})
 OCI_info.to_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/info.csv',index = False)
+
+info_base_cols = ['Country', 'Field Name', 'Assay Name', '2020 Total Oil and Gas Production Volume (boe)', 'Location', 'Max Depth(ft)', 'Gas shipped as LNG', 'Enhanced recovery', 'Fracked', 'Default Refinery Configuration',
+'Heating Value Processed Oil and Gas (MJ/d)', 'Years in Production', 'Number of Producing Wells', '2020 Crude Production Volume (bbl)', 
+'Region', 'Latitude', 'Longitude', 'API Gravity', 'Sulfur Content Weight Percent', 'Water-to-oil Ratio (bbl water/bbl oil)', 
+'Gas-to-Oil Ratio (scf/bbl)', 'Flaring-to-Oil Ratio (scf flared/bbl)', 'Upstream Methane Intensity (kgCH4/boe)', 
+'Midstream Methane Intensity (kgCH4/boe)', 'Downstream Methane Intensity (kgCH4/boe)', 'Total Methane Intensity (kgCH4/boe)',
+'Upstream Methane Emission Rate (NGSI Standard %)', 'Upstream Methane Emission Rate (gCH4/Total MJ Produced)', 'Gas composition H2S',
+'Gas composition CO2', 'Gas composition C1', 'Flare Rate', 'OPEC', 'Oil or Gas', 'Resource Type', 'Sour or Sweet', 'descriptor']
+OCI_info.drop(columns = '_merge', inplace = True)
+coordinates = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Inputs/coordinates.csv')
+match_table = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Inputs/field_match.csv')
+select_coordinates = match_table.merge(coordinates,left_on = ['matched_field'],right_on = ['Field Name'], how = 'left',indicator = True)
+select_coordinates[select_coordinates['_merge']!='both']
+select_coordinates = select_coordinates[['Field Name_x','Country_y','Region','Latitude','Longitude']]
+select_coordinates.rename(columns = {'Field Name_x':'Field Name'}, inplace = True)
+OCI_info = OCI_info.merge(select_coordinates, how = 'left',indicator = True)
+def region_mod(x):
+    if x in['Asia','Oceania']:
+        return 'Asia-Pacific'
+    elif x in(['Africa','South America','North America']):
+        return x+'n'
+    elif x in(['Middle East','Caribbean','Former Soviet Union']):
+        return x
+    else:
+        return x
+
+OCI_info['Region_m']=OCI_info['Region'].apply(region_mod)
+
+OCI_info['descriptor']= (
+        'The '
+        + OCI_info['Field Name']
+        +' field is located in '
+        + OCI_info['Country']
+        + '. This '
+        + OCI_info['Region_m']
+        + ' region asset is classified as '
+        + OCI_info['Resource type'].apply(lambda x: x.lower())
+        + '. All produced liquids are processed in a '
+        + OCI_info['Default Refinery Configuration'].apply(lambda x: x.lower())
+        + ' refinery assuming the following oil assay: '
+        + OCI_info['Assay Name']
+        + '. Following are the detailed resource characteristics modeled in the OCI+.')
+
+OCI_info.drop(columns = 'Region_m',inplace = True)
+
+OCI_info.rename(columns ={'Max Depth (ft)':'Max Depth(ft)','API gravity': 'API Gravity',
+'Sulfur wt percent': 'Sulfur Content Weight Percent', 'Resource type': 'Resource Type'},inplace = True)
+infobase = OCI_info[info_base_cols][OCI_info['gwp']==100]
+info_100_cols=['Country', 'Field Name', 'Upstream: Exploration (kgCO2eq/boe)', 'Upstream: Drilling & Development (kgCO2eq/boe)', 
+'Upstream: Crude Production & Extraction (kgCO2eq/boe)', 'Upstream: Surface Processing (kgCO2eq/boe)', 
+'Upstream: Maintenance (kgCO2eq/boe)', 'Upstream: Waste Disposal (kgCO2eq/boe)', 'Upstream: Crude Transport (kgCO2eq/boe)', 
+'Upstream: Other Small Sources (kgCO2eq/boe)', 'Upstream: Offsite emissions credit/debit (kgCO2eq/boe)', 
+'Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)', 'Upstream Carbon Intensity (kgCO2eq/boe)', 
+'Midstream: Electricity (kgCO2eq/boe)', 'Midstream: Heat (kgCO2eq/boe)', 'Midstream: Steam (kgCO2eq/boe)', 
+'Midstream: Hydrogen via SMR (kgCO2eq/boe)', 'Midstream: Hydrogen via CNR (kgCO2eq/boe)', 
+'Midstream: Other Emissions (kgCO2eq/boe)', 'Midstream Carbon Intensity (kgCO2eq/boe)', 
+'Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)', 
+'Downstream: Transport of LNG to Consumers (kgCO2eq/boe)', 
+'Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)', 
+'Downstream: Gasoline for Cars (kgCO2eq/boe)', 'Downstream: Jet Fuel for Planes (kgCO2eq/boe)', 
+'Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)', 'Downstream: Fuel Oil for Boilers (kgCO2eq/boe)', 
+'Downstream: Petroleum Coke for Power (kgCO2eq/boe)', 'Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)', 
+'Downstream: Natural Gas Liquids (kgCO2eq/boe)', 'Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)', 
+'Downstream: Petrochemical Feedstocks (kgCO2eq/boe)', 'Downstream: Natural Gas (kgCO2eq/boe)', 
+'Downstream Carbon Intensity (kgCO2eq/boe)', 'Total Emission Carbon Intensity (kgCO2eq/boe)', 
+'Industry GHG Responsibility (kgCO2eq/boe)', 'Consumer GHG Responsibility (kgCO2eq/boe)']
+info100 = OCI_info[OCI_info['gwp']==100][info_100_cols]
+info20 = OCI_info[OCI_info['gwp']==20][info_100_cols]
+infobase['Fracked'] = infobase['Fracked'].apply(lambda x: bool(x))
+infobase['Gas shipped as LNG'] = infobase['Gas shipped as LNG'].apply(lambda x: bool(x))
+infobase.to_csv('/Users/rwang/Documents/oci/basedata/infobase.csv')
+info20.to_csv('/Users/rwang/Documents/oci/basedata/info20.csv')
+info100.to_csv('/Users/rwang/Documents/oci/basedata/info100.csv')

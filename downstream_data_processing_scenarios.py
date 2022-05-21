@@ -66,9 +66,13 @@ def prep_for_opem(upstream, midstream):
         upstream_midstream.drop(columns = '_merge',inplace = True)    
     return upstream_midstream
 
-def run_opem(upstream_midstream, gwp, petcoke):   
+def run_opem(upstream_midstream, gwp, petcoke,stage):   
     upstream_midstream_for_opem = upstream_midstream[upstream_midstream['gwp']==gwp]
-    upstream_midstream_for_opem['OPEM_field_name']=upstream_midstream_for_opem['Field_name']+';'+upstream_midstream_for_opem['original_file']
+    if stage =='Upstream': # if it's a downstream toggle, OPEM field identifier can be simpler because there are no ambiguous match
+        upstream_midstream_for_opem['OPEM_field_name']=(upstream_midstream_for_opem['Field_name']+';'+upstream_midstream_for_opem['original_file']
+        + upstream_midstream_for_opem['Scenario'] +';'+upstream_midstream_for_opem['Scenario_value'])
+    elif stage == 'Downstream':
+        upstream_midstream_for_opem['OPEM_field_name']=upstream_midstream_for_opem['Field_name']+';'+upstream_midstream_for_opem['original_file']
 
     print('Getting data for OPEM Product Slates...')
 
@@ -184,14 +188,14 @@ def run_opem(upstream_midstream, gwp, petcoke):
 
 results = []
 for petcoke in ['1','0.5','0']:
-    up_mid_down = run_opem(prep_for_opem(upstream,midstream),20, petcoke)
+    up_mid_down = run_opem(prep_for_opem(upstream,midstream),20, petcoke,'Downstream')
     up_mid_down['Scenario_value']=petcoke
     up_mid_down['Default?']=up_mid_down['Scenario_value'].apply(lambda x: 'Y' if x=='1' else 'N')
     results.append(up_mid_down)
 downstream_scenarios_results = pd.concat(results)
 
 upstream_scenarios = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/upstream_postprocessed_scenarios.csv')
-upstream_scenarios_results = run_opem(prep_for_opem(upstream_scenarios,midstream),20,'1')
+upstream_scenarios_results = run_opem(prep_for_opem(upstream_scenarios,midstream),20,'1','Upstream')
 
 df = pd.concat([downstream_scenarios_results,upstream_scenarios_results])
 df.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_scenarios.csv',index = False)
