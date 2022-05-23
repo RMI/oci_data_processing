@@ -137,7 +137,7 @@ OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
     up_mid_down['Ethane_ConversionEmissions_kgCO2e/BOE']
 
 OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'] = \
-    up_mid_down['NatGas_CombustionEmissions_kgCO2e/BOE']
+   up_mid_down['NatGas_CombustionEmissions_kgCO2e/BOE'].clip(0,None)
     
 OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
     + OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
