@@ -10,7 +10,7 @@ print('Merging upstream and midstream results...')
 # import sqlite3
 # connection = sqlite3.connect("../OCI_Database.db")
 
-upstream = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/upstream_postprocessed.csv')
+upstream = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/upstream_postprocessed_fix.csv')
 midstream = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/midstream_postprocessed.csv')
 
 
@@ -179,4 +179,4 @@ def run_opem(upstream_midstream, gwp):
 up_mid_down_100 = run_opem(upstream_midstream, 100)
 up_mid_down_20 = run_opem(upstream_midstream, 20)
 up_mid_down = pd.concat([up_mid_down_100,up_mid_down_20])
-up_mid_down.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed.csv')
+up_mid_down.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_fix.csv')

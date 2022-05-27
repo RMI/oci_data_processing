@@ -10,7 +10,7 @@ print('Merging upstream and midstream results...')
 # import sqlite3
 # connection = sqlite3.connect("../OCI_Database.db")
 
-upstream = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/upstream_postprocessed.csv')
+upstream = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/upstream_postprocessed_fix.csv')
 midstream = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/midstream_postprocessed.csv')
 upstream = upstream[upstream['gwp']== 20]
 petcoke_scenario_fields = ['Midway-Sunset', 'Suncor Synthetic A', 'Christina Lake']
@@ -194,8 +194,8 @@ for petcoke in ['1','0.5','0']:
     results.append(up_mid_down)
 downstream_scenarios_results = pd.concat(results)
 
-upstream_scenarios = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/upstream_postprocessed_scenarios.csv')
+upstream_scenarios = pd.read_csv('/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/upstream_postprocessed_scenarios_fix.csv')
 upstream_scenarios_results = run_opem(prep_for_opem(upstream_scenarios,midstream),20,'1','Upstream')
 
 df = pd.concat([downstream_scenarios_results,upstream_scenarios_results])
-df.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_scenarios.csv',index = False)
+df.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_scenarios_fix.csv',index = False)

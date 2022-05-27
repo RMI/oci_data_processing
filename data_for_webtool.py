@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
-up_mid_down = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed.csv')
+up_mid_down = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_fix.csv')
 #up_mid_down = df #df[df['gwp']==20]
 OCI_info = pd.DataFrame()
 # select relevant columns from up_mid_down to OCI_info
@@ -313,7 +313,7 @@ OCI_info = OCI_info.round({
     'Upstream Carbon Intensity (kgCO2eq/boe)':0,
     'Midstream Carbon Intensity (kgCO2eq/boe)':0,
     'Downstream Carbon Intensity (kgCO2eq/boe)':0})
-OCI_info.to_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/info.csv',index = False)
+OCI_info.to_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/info_fix.csv',index = False)
 
 info_base_cols = ['Country', 'Field Name', 'Assay Name', '2020 Total Oil and Gas Production Volume (boe)', 'Location', 'Max Depth(ft)', 'Gas shipped as LNG', 'Enhanced recovery', 'Fracked', 'Default Refinery Configuration',
 'Heating Value Processed Oil and Gas (MJ/d)', 'Years in Production', 'Number of Producing Wells', '2020 Crude Production Volume (bbl)', 
