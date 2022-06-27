@@ -341,6 +341,8 @@ def region_mod(x):
         return x
 
 OCI_info['Region_m']=OCI_info['Region'].apply(region_mod)
+# Replace Block 6 field name to South Oman Heavy
+OCI_info['Field Name'].replace('Block 6', 'South Oman Heavy',inplace = True)
 
 OCI_info['descriptor']= (
         'The '
