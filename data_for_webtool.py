@@ -1,9 +1,37 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # Import Packages
+
+# In[1]:
+
+
 import pandas as pd
 import numpy as np
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
+from datetime import date
+
+
+# # Import Data
+
+# In[2]:
+
+
+sp_dir = '/Users/lschmeisser/RMI/Climate Action Engine - Documents/OCI Phase 2'
 up_mid_down = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_fix.csv')
 #up_mid_down = df #df[df['gwp']==20]
+
+
+# In[3]:
+
+
 OCI_info = pd.DataFrame()
+
+
+# # Fill in OCI_info with up_mid_down
+
+# In[4]:
+
+
 # select relevant columns from up_mid_down to OCI_info
 OCI_info['Field Name']=up_mid_down['Field_name']
 OCI_info['Country']=up_mid_down['Field location (Country)']
@@ -18,6 +46,7 @@ OCI_info['Location']=np.where(up_mid_down['Offshore?']==0,'Onshore', 'Offshore')
 OCI_info['Max Depth (ft)']=up_mid_down['Field depth']
 OCI_info['Water-to-oil Ratio (bbl water/bbl oil)']=up_mid_down['Water-to-oil ratio (WOR)']
 OCI_info['Gas shipped as LNG']=np.where(up_mid_down['lng?']==True,1,0)
+
 # If any of the following operation is 1 in OPGEE input, it's considered as Enhanced Oil Recovery
 OCI_info['Enhanced recovery']=up_mid_down[['Natural gas reinjection','Water flooding','Gas lifting',
                                             'Gas flooding','Steam flooding']].any(axis='columns')
@@ -32,23 +61,25 @@ OCI_info['Flaring-to-Oil Ratio (scf flared/bbl)'] = up_mid_down['Flaring-to-oil 
 OCI_info['Steam-to-Oil Ratio (bbl steam/bbl oil)'] = up_mid_down['Steam-to-oil ratio (SOR)']
 OCI_info['2020 Crude Production Volume (bbl)']= up_mid_down['Oil production volume']*365
 OCI_info['2020 Total Oil and Gas Production Volume (boe)']= up_mid_down['Total_BOE_Produced']*365
+
 # Upstream methane accounts for all of flaring, part of fugitives/venting (Production, Gathering and Boosting, Secondary production)
-OCI_info['Upstream Methane Intensity (kgCH4/boe)']=(up_mid_down['venting_ch4_uponly(t/d)']+up_mid_down['fugitive_ch4_uponly(t/d)']+up_mid_down['flaring_ch4(t/d)'])*365\
-/(OCI_info['2020 Total Oil and Gas Production Volume (boe)'])*1000
+OCI_info['Upstream Methane Intensity (kgCH4/boe)']=(up_mid_down['venting_ch4_uponly(t/d)']+up_mid_down['fugitive_ch4_uponly(t/d)']+up_mid_down['flaring_ch4(t/d)'])*365/(OCI_info['2020 Total Oil and Gas Production Volume (boe)'])*1000
+
 # Midstream Methane Intensity calculation, use 100yr total emission from midstream runs and get fraction of CO2eq and convert back to methane 
-OCI_info['Midstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total refinery processes']\
-    *OCI_info['2020 Crude Production Volume (bbl)']/OCI_info['2020 Crude Production Volume (bbl)']\
-    *up_mid_down['emission_frac_CH4']/30
-# Downstream mehtane accounts for all OPEM methane output + upstream natural gas distribution /LNG
-OCI_info['Downstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total_CH4_Emissions_kgCH4/BOE']+\
-    up_mid_down['tCH4/year']/OCI_info['2020 Total Oil and Gas Production Volume (boe)']*1000-OCI_info['Upstream Methane Intensity (kgCH4/boe)']
-OCI_info['Total Methane Intensity (kgCH4/boe)'] = OCI_info['Upstream Methane Intensity (kgCH4/boe)']+\
-OCI_info['Midstream Methane Intensity (kgCH4/boe)'] +OCI_info['Downstream Methane Intensity (kgCH4/boe)']
-OCI_info['Upstream Methane Emission Rate (NGSI Standard %)'] = up_mid_down['tCH4/year-miQ']*up_mid_down['ES_Gas_output(MJ/d)']/up_mid_down['ES_MJperd']\
-        /(up_mid_down['FS_Gas_at_Wellhead(t/d)']*365*up_mid_down['Gas composition C1']/100)
+OCI_info['Midstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total refinery processes']    *OCI_info['2020 Crude Production Volume (bbl)']/OCI_info['2020 Crude Production Volume (bbl)']    *up_mid_down['emission_frac_CH4']/30
+
+# Downstream methane accounts for all OPEM methane output + upstream natural gas distribution /LNG
+OCI_info['Downstream Methane Intensity (kgCH4/boe)']=up_mid_down['Total_CH4_Emissions_kgCH4/BOE']+    up_mid_down['tCH4/year']/OCI_info['2020 Total Oil and Gas Production Volume (boe)']*1000-OCI_info['Upstream Methane Intensity (kgCH4/boe)']
+OCI_info['Total Methane Intensity (kgCH4/boe)'] = OCI_info['Upstream Methane Intensity (kgCH4/boe)']+OCI_info['Midstream Methane Intensity (kgCH4/boe)'] +OCI_info['Downstream Methane Intensity (kgCH4/boe)']
+OCI_info['Upstream Methane Emission Rate (NGSI Standard %)'] = up_mid_down['tCH4/year-miQ']*up_mid_down['ES_Gas_output(MJ/d)']/up_mid_down['ES_MJperd']        /(up_mid_down['FS_Gas_at_Wellhead(t/d)']*365*up_mid_down['Gas composition C1']/100)
+
 #If gas output is negative in OPGEE, zero it out to avoid a negative methane emission rate
 OCI_info['Upstream Methane Emission Rate (NGSI Standard %)'] = np.where(OCI_info['Upstream Methane Emission Rate (NGSI Standard %)']<0,0,OCI_info['Upstream Methane Emission Rate (NGSI Standard %)']*100)
 OCI_info['Upstream Methane Emission Rate (gCH4/Total MJ Produced)'] = up_mid_down['tCH4/year']*1e6/(up_mid_down['ES_MJperd']*365)
+
+
+# In[5]:
+
 
 def refinery_config(x):
     try:
@@ -100,11 +131,11 @@ midstream_emission_category_CO2 ={
     'Midstream: Other Emissions (kgCO2eq/boe)':'Other Emissions'
 }
 
-
-
 for i in midstream_emission_category_CO2:
     OCI_info[i] = midstream_scaler(midstream_emission_category_CO2[i])
 
+
+# In[6]:
 
 
 OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)']=sum([OCI_info[i] for i in midstream_emission_category_CO2])
@@ -117,27 +148,17 @@ OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'] = u
 #OCI_info['Downstream: Transport to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] +\
 #    OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] + OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']
 
-OCI_info['Downstream: Gasoline for Cars (kgCO2eq/boe)']=\
-    up_mid_down['Gasoline_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']=\
-    up_mid_down['Jet_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)'] = \
-    up_mid_down['Diesel_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'] = \
-    up_mid_down['FuelOil_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Petroleum Coke for Power (kgCO2eq/boe)'] = \
-    up_mid_down['RefineryCoke_CombustionEmissions_kgCO2e/BOE'] + up_mid_down['UpgraderCoke_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)'] = \
-    up_mid_down['ResidFuel_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Natural Gas Liquids (kgCO2eq/boe)'] =\
-    up_mid_down['UpstreamNGLProd_CombustionEmissions_kgCO2e/BOE'] 
-OCI_info['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] = \
-    up_mid_down['RefineryLPG_CombustionEmissions_kgCO2e/BOE']
-OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=\
-    up_mid_down['Ethane_ConversionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Gasoline for Cars (kgCO2eq/boe)']=    up_mid_down['Gasoline_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Jet Fuel for Planes (kgCO2eq/boe)']=    up_mid_down['Jet_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)'] =     up_mid_down['Diesel_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'] =     up_mid_down['FuelOil_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Petroleum Coke for Power (kgCO2eq/boe)'] =     up_mid_down['RefineryCoke_CombustionEmissions_kgCO2e/BOE'] + up_mid_down['UpgraderCoke_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)'] =     up_mid_down['ResidFuel_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Natural Gas Liquids (kgCO2eq/boe)'] =    up_mid_down['UpstreamNGLProd_CombustionEmissions_kgCO2e/BOE'] 
+OCI_info['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] =     up_mid_down['RefineryLPG_CombustionEmissions_kgCO2e/BOE']
+OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']=    up_mid_down['Ethane_ConversionEmissions_kgCO2e/BOE']
 
-OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'] = \
-   up_mid_down['NatGas_CombustionEmissions_kgCO2e/BOE'].clip(0,None)
+OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'] =    up_mid_down['NatGas_CombustionEmissions_kgCO2e/BOE'].clip(0,None)
     
 OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)']
     + OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
@@ -153,8 +174,7 @@ OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'] = (OCI_info['Downstream: T
     + OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)']
     + OCI_info['Downstream: Natural Gas (kgCO2eq/boe)']) 
 
-OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)']=OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)']+\
-OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)']+OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)']
+OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)']=OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)']+OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)']+OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)']
 
 OCI_info['Industry GHG Responsibility (kgCO2eq/boe)']=(OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)']
     + OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)']
@@ -162,8 +182,11 @@ OCI_info['Industry GHG Responsibility (kgCO2eq/boe)']=(OCI_info['Upstream Carbon
     + OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)']
     + OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)']) 
 
-OCI_info['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)'] \
-    - OCI_info['Industry GHG Responsibility (kgCO2eq/boe)']
+OCI_info['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)']     - OCI_info['Industry GHG Responsibility (kgCO2eq/boe)']
+
+
+# In[7]:
+
 
 # Post-aggregation field property value assignment
 ## Flare rate is defined in the following categorical way
@@ -183,6 +206,9 @@ def flare_rate_category(x):
         return 'Ultra High Flare'
     else:
         return 'No Flare Info'
+
+
+# In[8]:
 
 
 OCI_info['Flare Rate']=OCI_info.apply(lambda x: flare_rate_category(x),axis =1)
@@ -251,6 +277,10 @@ OCI_info['Sour or Sweet'] = OCI_info.apply(lambda x: sweet_sour(x),axis =1)
 #     row['match_score']=m[1]
 #     return row
 
+
+# In[9]:
+
+
 # match_table = OCI_info[['Field Name','Country']].drop_duplicates().apply(lambda x: field_match(x, coordinates['Field Name'].to_list()),axis =1 )
 # match_table.to_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Inputs/field_match.csv',index = False)
 coordinates = pd.read_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Inputs/coordinates.csv')
@@ -287,6 +317,10 @@ OCI_info['descriptor']= (
 
 OCI_info.drop(columns = 'Region_m',inplace = True)
 
+
+# In[10]:
+
+
 # Rounding columns
 OCI_info = OCI_info.round({
     '2020 Total Oil and Gas Production Volume (boe)':0,
@@ -313,8 +347,12 @@ OCI_info = OCI_info.round({
     'Upstream Carbon Intensity (kgCO2eq/boe)':0,
     'Midstream Carbon Intensity (kgCO2eq/boe)':0,
     'Downstream Carbon Intensity (kgCO2eq/boe)':0})
-OCI_info.to_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/info_fix.csv',index = False)
 
+
+# In[12]:
+
+
+#Create info_base
 info_base_cols = ['Country', 'Field Name', 'Assay Name', '2020 Total Oil and Gas Production Volume (boe)', 'Location', 'Max Depth(ft)', 'Gas shipped as LNG', 'Enhanced recovery', 'Fracked', 'Default Refinery Configuration',
 'Heating Value Processed Oil and Gas (MJ/d)', 'Years in Production', 'Number of Producing Wells', '2020 Crude Production Volume (bbl)', 
 'Region', 'Latitude', 'Longitude', 'API Gravity', 'Sulfur Content Weight Percent', 'Water-to-oil Ratio (bbl water/bbl oil)', 
@@ -344,6 +382,11 @@ OCI_info['Region_m']=OCI_info['Region'].apply(region_mod)
 # Replace Block 6 field name to South Oman Heavy
 OCI_info['Field Name'].replace('Block 6', 'South Oman Heavy',inplace = True)
 
+
+# In[13]:
+
+
+
 OCI_info['descriptor']= (
         'The '
         + OCI_info['Field Name']
@@ -360,6 +403,138 @@ OCI_info['descriptor']= (
         + '. Following are the detailed resource characteristics modeled in the OCI+.')
 
 OCI_info.drop(columns = 'Region_m',inplace = True)
+
+
+# # Snaglist for webtool updates
+
+# In[15]:
+
+
+# Round all numbers > 1 to a whole number
+# Round all numbers < 1 to two decimal places 
+OCI_info['2020 Total Oil and Gas Production Volume (boe)'] = OCI_info['2020 Total Oil and Gas Production Volume (boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Max Depth (ft)'] = OCI_info['Max Depth (ft)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Water-to-oil Ratio (bbl water/bbl oil)'] = OCI_info['Water-to-oil Ratio (bbl water/bbl oil)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Gas-to-Oil Ratio (scf/bbl)'] = OCI_info['Gas-to-Oil Ratio (scf/bbl)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Flaring-to-Oil Ratio (scf flared/bbl)'] = OCI_info['Flaring-to-Oil Ratio (scf flared/bbl)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Steam-to-Oil Ratio (bbl steam/bbl oil)'] = OCI_info['Steam-to-Oil Ratio (bbl steam/bbl oil)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['2020 Crude Production Volume (bbl)'] = OCI_info['2020 Crude Production Volume (bbl)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream Methane Intensity (kgCH4/boe)'] = OCI_info['Upstream Methane Intensity (kgCH4/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream Methane Intensity (kgCH4/boe)'] = OCI_info['Midstream Methane Intensity (kgCH4/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream Methane Intensity (kgCH4/boe)'] = OCI_info['Downstream Methane Intensity (kgCH4/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Total Methane Intensity (kgCH4/boe)'] = OCI_info['Total Methane Intensity (kgCH4/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Exploration (kgCO2eq/boe)'] = OCI_info['Upstream: Exploration (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Drilling & Development (kgCO2eq/boe)'] = OCI_info['Upstream: Drilling & Development (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Crude Production & Extraction (kgCO2eq/boe)'] = OCI_info['Upstream: Crude Production & Extraction (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Surface Processing (kgCO2eq/boe)'] = OCI_info['Upstream: Surface Processing (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Maintenance (kgCO2eq/boe)'] = OCI_info['Upstream: Maintenance (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Waste Disposal (kgCO2eq/boe)'] = OCI_info['Upstream: Waste Disposal (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Crude Transport (kgCO2eq/boe)'] = OCI_info['Upstream: Crude Transport (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Other Small Sources (kgCO2eq/boe)'] = OCI_info['Upstream: Other Small Sources (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Offsite emissions credit/debit (kgCO2eq/boe)'] = OCI_info['Upstream: Offsite emissions credit/debit (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)'] = OCI_info['Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream: Electricity (kgCO2eq/boe)'] = OCI_info['Midstream: Electricity (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream: Heat (kgCO2eq/boe)'] = OCI_info['Midstream: Heat (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream: Steam (kgCO2eq/boe)'] = OCI_info['Midstream: Steam (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream: Hydrogen via SMR (kgCO2eq/boe)'] = OCI_info['Midstream: Hydrogen via SMR (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream: Hydrogen via CNR (kgCO2eq/boe)'] = OCI_info['Midstream: Hydrogen via CNR (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream: Other Emissions (kgCO2eq/boe)'] = OCI_info['Midstream: Other Emissions (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Gasoline for Cars (kgCO2eq/boe)'] = OCI_info['Downstream: Gasoline for Cars (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Jet Fuel for Planes (kgCO2eq/boe)'] = OCI_info['Downstream: Jet Fuel for Planes (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)'] = OCI_info['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'] = OCI_info['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Petroleum Coke for Power (kgCO2eq/boe)'] = OCI_info['Downstream: Petroleum Coke for Power (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)'] = OCI_info['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Natural Gas Liquids (kgCO2eq/boe)'] = OCI_info['Downstream: Natural Gas Liquids (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] = OCI_info['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)'] = OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'] = OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Industry GHG Responsibility (kgCO2eq/boe)'] = OCI_info['Industry GHG Responsibility (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info['Consumer GHG Responsibility (kgCO2eq/boe)'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['API gravity'] = OCI_info['API gravity'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+OCI_info['Sulfur wt percent'] = OCI_info['Sulfur wt percent'].apply(lambda x: round(x,0) if x > 1 else round(x,2))
+
+
+# In[16]:
+
+
+# # Change heating value into scientific notation (there are too many commas)
+# for i in range(len(OCI_info)):
+#     OCI_info['Heating Value Processed Oil and Gas (MJ/d)'][i] = "{:e}".format(OCI_info['Heating Value Processed Oil and Gas (MJ/d)'][i])
+
+
+# In[17]:
+
+
+# # Add a comma to all numbers > 1000 and change to a string
+# OCI_info['2020 Total Oil and Gas Production Volume (boe)'] = OCI_info['2020 Total Oil and Gas Production Volume (boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Max Depth(ft)'] = OCI_info['Max Depth(ft)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Water-to-oil Ratio (bbl water/bbl oil)'] = OCI_info['Water-to-oil Ratio (bbl water/bbl oil)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Gas-to-Oil Ratio (scf/bbl)'] = OCI_info['Gas-to-Oil Ratio (scf/bbl)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Flaring-to-Oil Ratio (scf flared/bbl)'] = OCI_info['Flaring-to-Oil Ratio (scf flared/bbl)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Steam-to-Oil Ratio (bbl steam/bbl oil)'] = OCI_info['Steam-to-Oil Ratio (bbl steam/bbl oil)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['2020 Crude Production Volume (bbl)'] = OCI_info['2020 Crude Production Volume (bbl)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream Methane Intensity (kgCH4/boe)'] = OCI_info['Upstream Methane Intensity (kgCH4/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream Methane Intensity (kgCH4/boe)'] = OCI_info['Midstream Methane Intensity (kgCH4/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream Methane Intensity (kgCH4/boe)'] = OCI_info['Downstream Methane Intensity (kgCH4/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Total Methane Intensity (kgCH4/boe)'] = OCI_info['Total Methane Intensity (kgCH4/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Exploration (kgCO2eq/boe)'] = OCI_info['Upstream: Exploration (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Drilling & Development (kgCO2eq/boe)'] = OCI_info['Upstream: Drilling & Development (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Crude Production & Extraction (kgCO2eq/boe)'] = OCI_info['Upstream: Crude Production & Extraction (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Surface Processing (kgCO2eq/boe)'] = OCI_info['Upstream: Surface Processing (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Maintenance (kgCO2eq/boe)'] = OCI_info['Upstream: Maintenance (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Waste Disposal (kgCO2eq/boe)'] = OCI_info['Upstream: Waste Disposal (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Crude Transport (kgCO2eq/boe)'] = OCI_info['Upstream: Crude Transport (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Other Small Sources (kgCO2eq/boe)'] = OCI_info['Upstream: Other Small Sources (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Offsite emissions credit/debit (kgCO2eq/boe)'] = OCI_info['Upstream: Offsite emissions credit/debit (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)'] = OCI_info['Upstream: Carbon Dioxide Sequestration (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Upstream Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream: Electricity (kgCO2eq/boe)'] = OCI_info['Midstream: Electricity (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream: Heat (kgCO2eq/boe)'] = OCI_info['Midstream: Heat (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream: Steam (kgCO2eq/boe)'] = OCI_info['Midstream: Steam (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream: Hydrogen via SMR (kgCO2eq/boe)'] = OCI_info['Midstream: Hydrogen via SMR (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream: Hydrogen via CNR (kgCO2eq/boe)'] = OCI_info['Midstream: Hydrogen via CNR (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream: Other Emissions (kgCO2eq/boe)'] = OCI_info['Midstream: Other Emissions (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Midstream Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of Petroleum Products to Consumers (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of LNG to Consumers (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'] = OCI_info['Downstream: Transport of Pipeline Gas to Consumers (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Gasoline for Cars (kgCO2eq/boe)'] = OCI_info['Downstream: Gasoline for Cars (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Jet Fuel for Planes (kgCO2eq/boe)'] = OCI_info['Downstream: Jet Fuel for Planes (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)'] = OCI_info['Downstream: Diesel for Trucks and Engines (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'] = OCI_info['Downstream: Fuel Oil for Boilers (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Petroleum Coke for Power (kgCO2eq/boe)'] = OCI_info['Downstream: Petroleum Coke for Power (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)'] = OCI_info['Downstream: Liquid Heavy Ends for Ships (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Natural Gas Liquids (kgCO2eq/boe)'] = OCI_info['Downstream: Natural Gas Liquids (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'] = OCI_info['Downstream: Liquefied Petroleum Gases (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)'] = OCI_info['Downstream: Petrochemical Feedstocks (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'] = OCI_info['Downstream: Natural Gas (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Downstream Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)'] = OCI_info['Total Emission Carbon Intensity (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Industry GHG Responsibility (kgCO2eq/boe)'] = OCI_info['Industry GHG Responsibility (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Consumer GHG Responsibility (kgCO2eq/boe)'] = OCI_info['Consumer GHG Responsibility (kgCO2eq/boe)'].apply(lambda x: "{:,}".format(x))
+# OCI_info['API Gravity'] = OCI_info['API Gravity'].apply(lambda x: "{:,}".format(x))
+# OCI_info['Sulfur Content Weight Percent'] = OCI_info['Sulfur Content Weight Percent'].apply(lambda x: "{:,}".format(x))
+
+
+# In[18]:
+
+
+# Round all upstream, midstream, and downstream emissions intensity to 2 decimal places
+# This will hopefully fix issues of carbon fee sometimes being 3+ decimal places
+
+
+# # Create info100 and info20 from OCI_info
+
+# In[19]:
+
 
 OCI_info.rename(columns ={'Max Depth (ft)':'Max Depth(ft)','API gravity': 'API Gravity',
 'Sulfur wt percent': 'Sulfur Content Weight Percent', 'Resource type': 'Resource Type'},inplace = True)
@@ -386,6 +561,24 @@ info100 = OCI_info[OCI_info['gwp']==100][info_100_cols]
 info20 = OCI_info[OCI_info['gwp']==20][info_100_cols]
 infobase['Fracked'] = infobase['Fracked'].apply(lambda x: bool(x))
 infobase['Gas shipped as LNG'] = infobase['Gas shipped as LNG'].apply(lambda x: bool(x))
-infobase.to_csv('/Users/rwang/Documents/oci/basedata/infobase.csv')
-info20.to_csv('/Users/rwang/Documents/oci/basedata/info20.csv')
-info100.to_csv('/Users/rwang/Documents/oci/basedata/info100.csv')
+
+
+# # Write out to csvs
+
+# In[21]:
+
+
+#Add timestamp to files
+today = str(date.today())
+print("Today's date:", today)
+
+
+# In[22]:
+
+
+#Write out to csvs
+OCI_info.to_csv(sp_dir + '/Upstream/upstream_data_pipeline_sp/Postprocessed_Outputs_2/info_'+today+'.csv',index = False)
+infobase.to_csv('/Users/lschmeisser/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/infobase_'+today+'.csv')
+info20.to_csv('/Users/lschmeisser/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/info20_'+today+'.csv')
+info100.to_csv('/Users/lschmeisser/RMI/Climate Action Engine - Documents/OCI Phase 2/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/info100_'+today+'.csv')
+
