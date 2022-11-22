@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import os
+
 pd.options.mode.chained_assignment = None 
-sp_dir = '/Users/rwang/RMI/Climate Action Engine - Documents/OCI Phase 2'
+sp_dir = '/Users/rwang/RMI/Climate Action Engine - OCI Phase 2'
 opem_dir = '/Users/rwang/Documents/OCI+/Downstream/opem'
 
 print('Merging upstream and midstream results...')
@@ -179,4 +180,5 @@ def run_opem(upstream_midstream, gwp):
 up_mid_down_100 = run_opem(upstream_midstream, 100)
 up_mid_down_20 = run_opem(upstream_midstream, 20)
 up_mid_down = pd.concat([up_mid_down_100,up_mid_down_20])
-up_mid_down.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_fix.csv')
+
+up_mid_down.to_csv(sp_dir+'/Upstream/upstream_data_pipeline_sp/Postprocessed_outputs_2/downstream_postprocessed_fix_opem.csv')
